@@ -1,0 +1,65 @@
+﻿@page "/"
+@using vNext.BlazorComponents.Grid
+@using vNext.BlazorComponents.Demo.Data;
+
+<h1>Hello, world!</h1>
+<EditForm EditContext="_editContext" Context="model">
+    <DataAnnotationsValidator />
+
+    <div style="height: 500px">
+
+        <SimpleGrid TRow="Product" OnRead="OnRead"  style="height: 100%" @ref="_grid">
+            <ColumnDef TRow="Product" Header="Id">
+                @context.Id
+            </ColumnDef>
+            <ColumnDef TRow="Product" Header="Name">
+                <InputText @bind-Value="context.Name" />
+            </ColumnDef>
+            <ColumnDef TRow="Product" Header="Length">
+                <InputNumber @bind-Value="context.Length" />
+            </ColumnDef>
+            <ColumnDef TRow="Product" Header="Width">
+                <InputNumber @bind-Value="context.Width" />
+            </ColumnDef>
+            <ColumnDef TRow="Product" Header="Height">
+                <InputNumber @bind-Value="context.Height" />
+            </ColumnDef>
+            <ColumnDef TRow="Product" Header="Volume" CellClass="text-right"
+                       CellClassSelector="@(data => data.Volume > 100 ? "bg-danger" : "bg-success")">
+                @((context.Volume / 1000).ToString("f3")) m<sup>3</sup>
+            </ColumnDef>
+        </SimpleGrid>
+    </div>
+    <ValidationSummary />
+</EditForm>
+
+@code
+{
+    [Inject] ProductsService ProductsService { get; set; }
+
+    Product[] _products;
+    SimpleGrid<Product> _grid;
+    EditContext _editContext;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _editContext = new EditContext(this);
+        _editContext.OnFieldChanged += OnFieldChanged;
+        _products = await ProductsService.GetProducts();
+    }
+
+    async Task OnRead(ReadEventArgs<Product> args)
+    {
+        var data = await ProductsService.GetProducts(args.StartIndex, args.Count);
+        args.Total = data.Total;
+        args.Items = data.Items;
+    }
+
+    void OnFieldChanged(object sender, FieldChangedEventArgs args)
+    {
+        if (args.FieldIdentifier.Model is Product product)
+        {
+            _grid.FindRow(product)?.Refresh();
+        }
+    }
+}

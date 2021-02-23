@@ -1,0 +1,65 @@
+$spacer: 1em !default;
+$table-hover-color: inherit !default;
+$table-hover-bg: #e6f2fb;
+// simple grid
+.simple-grid {
+    display: grid;
+    overflow: auto;
+    flex-grow: 1;
+}
+
+.sg-container {
+    display: flex;
+}
+
+.sg-header, .sg-row {
+    display: contents;
+}
+
+.simple-grid > div:not(.sg-row) {
+    grid-column: 1 / -1
+}
+
+.sg-cell {
+    white-space: nowrap;
+    height: 2em;
+    display: flex;
+    align-items: center;
+    padding-left: $spacer;
+    padding-right: $spacer;
+    border-bottom: solid 1px;
+    border-color: #f3f2f1;
+}
+.sg-placeholder {
+    grid-column: 1 / -1;
+}
+
+.sg-frozen-cell {
+    white-space: nowrap;
+    position: sticky;
+    z-index: 10;
+}
+
+.sg-header-cell {
+    font-weight: 600;
+    position: sticky;
+    z-index: 11;
+    top: 0;
+    background: white;
+    border-bottom: solid 1px #edebe9;
+}
+
+.sg-row {
+    &:hover > .sg-cell {
+        color: $table-hover-color;
+        background-color: $table-hover-bg;
+    }
+
+    &:nth-child(even) > .sg-cell {
+    }
+}
+
+
+.sg-cell-input > * {
+    margin: 1px;
+}

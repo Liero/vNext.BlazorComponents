@@ -1,0 +1,31 @@
+﻿@using Microsoft.AspNetCore.Components.Web.Virtualization
+@typeparam TRow
+<CascadingValue Name="Grid" Value="this" IsFixed="true">
+    @ChildContent
+
+    <div class="sg-container" @attributes="AdditionalAttributes" @ref="_elementRef">
+        <div class="simple-grid @CssClass" style="grid-template-columns: @GridTemplateColumns;">
+            <div class="sg-header">
+                @foreach (var col in ColumnDefinitions)
+                {
+                    var col_ = col;
+                    <div class="sg-cell sg-header-cell" @key="col_">@col_.Header</div>
+                }
+            </div>
+            <Virtualize Items="Items" 
+                        ItemsProvider="@(Items == null ? ProvideItems : null)"
+                        OverscanCount="OverscanCount"
+                        Context="row">
+                <ItemContent>
+                    <Row Data="row" @key="row" />
+                </ItemContent>
+                <Placeholder>
+                    <div class="sg-row">
+                        <div class="sg-cell sg-placeholder" />
+                    </div>
+                </Placeholder>
+            </Virtualize>
+
+        </div>
+    </div>
+</CascadingValue>

@@ -1,0 +1,13 @@
+﻿@typeparam TRow
+<div class="sg-row" @onclick="_ => Grid!.RowClicked.InvokeAsync(Data)">
+    @{ 
+        if (cellRefs == null)
+        {
+            cellRefs = Grid!.ColumnDefinitions.Select(c => new CellRef(c)).ToList();
+        }
+    }
+    @foreach (var cellRef in cellRefs)
+    {
+        <Cell Data="Data" ColumnDef="cellRef.Column!" @key="cellRef" @ref="cellRef.Ref"></Cell>
+    }
+</div>

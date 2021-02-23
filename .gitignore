@@ -348,3 +348,5 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+/BlazorComponents/wwwroot/SimpleGrid.min.css
+/BlazorComponents/wwwroot/SimpleGrid.css
