@@ -38,25 +38,10 @@ jobs:
     runs-on: ubuntu-latest        
     
     steps:
-    - name: Setup NuGet.exe for use with actions     
-      uses: NuGet/setup-nuget@v1.0.5
-      with:
-        nuget-version: latest
-        nuget-api-key: ${{ secrets.NugetApiKey }}    
-        
     - name: Download a Build Artifact
       uses: actions/download-artifact@v2.0.8
       with:
         name: nugetpackage
         
-    - name: Finding package files and store to output
-      id: finding-files
-      run: |
-        echo "::set-output name=FILELIST::$(find . -name '*.nupkg' -print)"
-
     - name: Processing my found files from output
-      run: |
-        IFS="," read -a myarray <<< ${{ steps.finding-files.outputs.FILELIST }}
-        for i in "${myarray[@]}"; do
-           nuget push -Source nuget.org "${i}"
-        done
+      run:  dotnet nuget push "**/vNext.BlazorComponents.*.nupkg" -s https://api.nuget.org/v3/index.json --api-key ${{ secrets.NugetApiKey }}
