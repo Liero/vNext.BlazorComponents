@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -6,15 +6,13 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Daniel Turan</Authors>
     <Company>vNext Software Consulting</Company>
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
     <PackageTags>Blazor DataGrid</PackageTags>
     <Description>High performace UI components for Blazor
  * SimpleGrid - virtualized datagrid with manual data operation, virtual and infinite scrolling</Description>
     <PackageReleaseNotes>DataGrid initial release</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/Liero/vNext.BlazorComponents</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Liero/vNext.BlazorComponents</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
   </PropertyGroup>
 
@@ -37,6 +35,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="5.0.3" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>
