@@ -6,7 +6,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Daniel Turan</Authors>
     <Company>vNext Software Consulting</Company>
-    <Version>0.2.1</Version>
+    <Version>0.2.2</Version>
     <PackageTags>Blazor DataGrid</PackageTags>
     <Description>High performace UI components for Blazor
  * SimpleGrid - virtualized datagrid with manual data operation, virtual and infinite scrolling
@@ -31,9 +31,13 @@
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="all" />
   </ItemGroup>
 
-
+  <Target Name="CompileStaticAssets" AfterTargets="AfterBuild">
+    <Exec Command="dotnet tool run webcompiler -c webcompilerconfiguration.json -f webcompilerfiles.conf" StandardOutputImportance="high" />
+  </Target>
+  
   <ItemGroup>
-    <Content Remove="compilerconfig.json" />
+    <Content Remove="*.json" />
+    <None Include="*.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,7 +45,6 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-    <None Include="compilerconfig.json" />
   </ItemGroup>
 
   

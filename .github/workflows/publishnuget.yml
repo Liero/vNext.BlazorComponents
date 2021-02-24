@@ -18,7 +18,11 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.x
-        
+
+    - name: Restore tools
+      run: dotnet tool restore      
+      working-directory: BlazorComponents
+
     - name: Restore dependencies
       run: dotnet restore
       
@@ -27,6 +31,8 @@ jobs:
       
     - name: Test
       run: dotnet test -c Release --no-build --verbosity normal
+      working-directory: BlazorComponents
+
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2.2.2
       with:
