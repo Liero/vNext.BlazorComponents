@@ -6,9 +6,20 @@
 <EditForm EditContext="_editContext" Context="model">
     <DataAnnotationsValidator />
 
+
+    <div class="text-right">
+        Total Volume:
+        @_products?.Sum(p => p.Volume / 1000).ToString("f3")
+
+        <span class="ml-3">Total Volume explicit container:</span>
+        <Container @ref="_totalVolumeExplicit" ExplicitRefresh="true">
+            @_products?.Sum(p => p.Volume / 1000).ToString("f3")
+        </Container>
+        <IconButton IconClass="oi oi-reload" class="btn btn-outline-primary" @onclick="_ => _totalVolumeExplicit.Refresh()">Refresh</IconButton>
+    </div>
     <div style="height: 500px">
 
-        <SimpleGrid TRow="Product" OnRead="OnRead"  style="height: 100%" @ref="_grid">
+        <SimpleGrid TRow="Product" Items="_products" style="height: 100%" @ref="_grid">
             <ColumnDef TRow="Product" Header="Id">
                 @context.Id
             </ColumnDef>
@@ -39,6 +50,8 @@
 
     Product[] _products;
     SimpleGrid<Product> _grid;
+    Container _totalVolume;
+    Container _totalVolumeExplicit;
     EditContext _editContext;
 
     protected override async Task OnInitializedAsync()
@@ -46,13 +59,7 @@
         _editContext = new EditContext(this);
         _editContext.OnFieldChanged += OnFieldChanged;
         _products = await ProductsService.GetProducts();
-    }
-
-    async Task OnRead(ReadEventArgs<Product> args)
-    {
-        var data = await ProductsService.GetProducts(args.StartIndex, args.Count);
-        args.Total = data.Total;
-        args.Items = data.Items;
+        _totalVolumeExplicit.Refresh();
     }
 
     void OnFieldChanged(object sender, FieldChangedEventArgs args)
@@ -60,6 +67,15 @@
         if (args.FieldIdentifier.Model is Product product)
         {
             _grid.FindRow(product)?.Refresh();
+
+            switch (args.FieldIdentifier.FieldName)
+            {
+                case nameof(Product.Height):
+                case nameof(Product.Width):
+                case nameof(Product.Length):
+                    // _totalVolume.Refresh();
+                    break;
+            }
         }
     }
 }

@@ -1,0 +1,14 @@
+﻿<button type="button" @attributes="AdditionalAttributes">
+    <span class="@IconClass"></span> @Text @ChildContent
+</button>
+
+@code {
+
+    [Parameter] public string? IconClass { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public string? Text { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes { get; set; }
+}

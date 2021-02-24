@@ -1,0 +1,28 @@
+﻿@ChildContent
+@code {
+    private bool _shouldRender = true;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public bool ExplicitRefresh { get; set; }
+
+
+    public void Refresh() {
+        _shouldRender = true;
+        StateHasChanged();
+    }
+
+
+    protected override bool ShouldRender() => _shouldRender;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (ExplicitRefresh)
+        {
+            _shouldRender = false;
+        }
+        base.OnAfterRender(firstRender);
+    }
+}
