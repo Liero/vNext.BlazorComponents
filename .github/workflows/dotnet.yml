@@ -34,7 +34,7 @@ jobs:
         path: BlazorComponents/bin/Release/*.nupkg
         
   publish:
-  
+    needs: build
     runs-on: ubuntu-latest        
     
     steps:
@@ -43,5 +43,5 @@ jobs:
       with:
         name: nugetpackage
         
-    - name: Processing my found files from output
+    - name: Publish to nuget
       run:  dotnet nuget push "**/vNext.BlazorComponents.*.nupkg" -s https://api.nuget.org/v3/index.json --api-key ${{ secrets.NugetApiKey }}
