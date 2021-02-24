@@ -1,0 +1,62 @@
+name: .NET
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build -c Release --no-restore
+      
+    - name: Test
+      run: dotnet test -c Release --no-build --verbosity normal
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2.2.2
+      with:
+        name: nugetpackage
+        path: BlazorComponents/bin/Release/*.nupkg
+        
+  publish:
+  
+    runs-on: ubuntu-latest        
+    
+    steps:
+    - name: Setup NuGet.exe for use with actions     
+      uses: NuGet/setup-nuget@v1.0.5
+      with:
+        nuget-version: latest
+        nuget-api-key: ${{ secrets.NugetApiKey }}    
+        
+    - name: Download a Build Artifact
+      uses: actions/download-artifact@v2.0.8
+      with:
+        name: nugetpackage
+        
+    - name: Finding package files and store to output
+      id: finding-files
+      run: |
+        echo "::set-output name=FILELIST::$(find . -name '*.nupkg' -print)"
+
+    - name: Processing my found files from output
+      run: |
+        IFS="," read -a myarray <<< ${{ steps.finding-files.outputs.FILELIST }}
+        for i in "${myarray[@]}"; do
+           nuget push -Source nuget.org "${i}"
+        done
