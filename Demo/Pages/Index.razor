@@ -40,6 +40,8 @@
                 @((context.Volume / 1000).ToString("f3")) m<sup>3</sup>
             </ColumnDef>
         </SimpleGrid>
+
+        <button type="button" @onclick="Reload">Reload</button>
     </div>
     <ValidationSummary />
 </EditForm>
@@ -58,6 +60,11 @@
     {
         _editContext = new EditContext(this);
         _editContext.OnFieldChanged += OnFieldChanged;
+        await Reload();
+    }
+
+    protected async Task Reload()
+    {
         _products = await ProductsService.GetProducts();
         _totalVolumeExplicit.Refresh();
     }

@@ -16,11 +16,20 @@ namespace vNext.BlazorComponents.Grid
         private ElementReference? _elementRef;
         private DotNetObjectReference<SimpleGrid<TRow>>? _dotNetRef;
         private HashSet<Row<TRow>> _rows = new();
+        private ICollection<TRow>? _items;
         #region parameters
 
         [Inject] protected IJSRuntime? JS { get; set; }
 
-        [Parameter] public ICollection<TRow>? Items { get; set; }
+        [Parameter]
+        public ICollection<TRow>? Items
+        {
+            get => _items; set
+            {
+                _items = value;
+                Invalidate();
+            }
+        }
 
         [Parameter] public EventCallback<ReadEventArgs<TRow>> OnRead { get; set; }
         [Parameter] public int OverscanCount { get; set; } = 3;
