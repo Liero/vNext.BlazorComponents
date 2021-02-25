@@ -1,5 +1,6 @@
 ﻿#pragma warning disable CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.JSInterop;
 using System;
@@ -71,6 +72,16 @@ namespace vNext.BlazorComponents.Grid
         }
         internal void AddRow(Row<TRow> row) => _rows.Add(row);
         internal void RemoveRow(Row<TRow> row) => _rows.Remove(row);
+
+        [JSInvokable]
+        public void OnResizeInterop(int columnIndex, double[] columnWidths)
+        {
+            for (int i = 0; i < columnWidths.Length; i++)
+            {
+                ColumnDefinitions[i].ActualWidth = columnWidths[i];
+            }
+            _gridTemplateColumns = null;
+        }
 
         internal void Invalidate()
         {

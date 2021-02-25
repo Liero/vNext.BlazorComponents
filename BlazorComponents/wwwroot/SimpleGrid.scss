@@ -1,7 +1,8 @@
 $spacer: 1em !default;
 $table-hover-color: inherit !default;
-$table-hover-bg: #e6f2fb;
-$table-bg: white;
+$table-hover-bg: #e6f2fb !default;
+$table-bg: white !default;
+$table-border-color: #f3f2f1 !default;
 // simple grid
 .simple-grid {
     display: grid;
@@ -26,17 +27,17 @@ $table-bg: white;
     height: 2em;
     display: flex;
     align-items: center;
-    padding-left: $spacer;
-    padding-right: $spacer;
+    padding-left: $spacer / 2;
+    padding-right: $spacer / 2;
     border-bottom: solid 1px;
     border-color: #f3f2f1;
+    overflow: hidden;
 }
 .sg-placeholder {
     grid-column: 1 / -1;
 }
 
 .sg-cell-frozen {
-    white-space: nowrap;
     position: sticky;
     z-index: 10;
     background: $table-bg;
@@ -53,6 +54,20 @@ $table-bg: white;
     top: 0;
     background: white;
     border-bottom: solid 1px #edebe9;
+}
+
+.sg-header-cell-resize {
+    position: absolute;
+    z-index: 11;
+    height: 100%;
+    width: 8px;
+    right: 0;
+    top: 0;
+    cursor: ew-resize;
+
+    &:hover {
+        background: #f3f2f1;
+    }
 }
 
 .sg-row {

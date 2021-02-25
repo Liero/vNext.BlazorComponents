@@ -26,16 +26,16 @@
             <ColumnDef TRow="Product" Header="Name" Width="15em">
                 <InputText @bind-Value="context.Name" />
             </ColumnDef>
-            <ColumnDef TRow="Product" Header="Length">
+            <ColumnDef TRow="Product" Header="Length" Width="max-content">
                 <InputNumber @bind-Value="context.Length" />
             </ColumnDef>
-            <ColumnDef TRow="Product" Header="Width">
+            <ColumnDef TRow="Product" Header="Width"  Width="min-content">
                 <InputNumber @bind-Value="context.Width" />
             </ColumnDef>
-            <ColumnDef TRow="Product" Header="Height">
+            <ColumnDef TRow="Product" Header="Height" Width="100px">
                 <InputNumber @bind-Value="context.Height" />
             </ColumnDef>
-            <ColumnDef TRow="Product" Header="Volume" CellClass="text-right"
+            <ColumnDef TRow="Product" Header="Volume" CellClass="text-right" Width="min-content"
                        CellClassSelector="@(e => e.Data.Volume > 100 ? "bg-danger" : "bg-success")">
                 @((context.Volume / 1000).ToString("f3")) m<sup>3</sup>
             </ColumnDef>
