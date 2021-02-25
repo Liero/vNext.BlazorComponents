@@ -14,12 +14,16 @@ namespace vNext.BlazorComponents.Grid
         private List<CellRef>? cellRefs;
 
         [Parameter] public TRow? Data { get; set; }
+
         [CascadingParameter(Name = "Grid")] public SimpleGrid<TRow>? Grid { get; set; }
 
-        public void Refresh()
+        public void Refresh(bool refreshCells = true)
         {
-            cellRefs?.ForEach(c => c.Ref?.Refresh());
             _shouldRender = true;
+            if (refreshCells && cellRefs != null)
+            {
+                cellRefs.ForEach(c => c.Ref?.Refresh());
+            }
         }
 
 
@@ -33,6 +37,15 @@ namespace vNext.BlazorComponents.Grid
             base.OnAfterRender(firstRender);
         }
 
+        private string ResolveCssClass()
+        {
+            string result = "sg-row ";
+            if (Grid!.RowClassSelector != null)
+            {
+                result += Grid.RowClassSelector(this);
+            }
+            return result;
+        }
 
         void IDisposable.Dispose() => Grid!.RemoveRow(this);
 

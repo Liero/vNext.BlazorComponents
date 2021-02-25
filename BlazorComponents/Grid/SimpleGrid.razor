@@ -6,10 +6,13 @@
     <div class="sg-container" @attributes="AdditionalAttributes" @ref="_elementRef">
         <div class="simple-grid @CssClass" style="grid-template-columns: @GridTemplateColumns;">
             <div class="sg-header">
+                @{int i = 0;}
                 @foreach (var col in ColumnDefinitions)
                 {
-                    var col_ = col;
-                    <div class="sg-cell sg-header-cell" @key="col_">@col_.Header</div>
+                    col.Index = i++;
+                    col.IsFrozen = col.Index < FrozenColumns;
+                    //var frozenWidth = 
+                    <Header ColumnDef="col" @key="col" />
                 }
             </div>
             <Virtualize Items="Items" 

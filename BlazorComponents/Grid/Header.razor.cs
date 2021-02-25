@@ -1,48 +1,32 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace vNext.BlazorComponents.Grid
 {
-    public partial class Cell<TRow> : ComponentBase
+    public partial class Header<TRow>
     {
-        private bool _shouldRender = true;
-
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        [Parameter] public TRow Data { get; set; }
         [Parameter] public ColumnDef<TRow> ColumnDef { get; set; }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
-
-        internal void Refresh()
-        {
-            _shouldRender = true;
-        }
-
-        protected override bool ShouldRender() => _shouldRender;
-
-        protected override void OnAfterRender(bool firstRender)
-        {
-            _shouldRender = false;
-            base.OnAfterRender(firstRender);
-        }
-
         private string ResolveCssClass()
         {
-            string result = "sg-cell ";
+            string result = "sg-cell sg-header-cell ";
             if (ColumnDef.IsFrozen)
             {
                 result += "sg-cell-frozen ";
             }
-            if (ColumnDef.CellClass != null)
+            if (ColumnDef.HeaderClass != null)
             {
-                result += ColumnDef.CellClass;
+                result += ColumnDef.HeaderClass;
             }
-            if (ColumnDef.CellClassSelector != null)
+            if (ColumnDef.HeaderClassSelector != null)
             {
-                result += " " + ColumnDef.CellClassSelector(this);
+                result += " " + ColumnDef.HeaderClassSelector(ColumnDef);
             }
             return result;
         }
