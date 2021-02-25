@@ -25,7 +25,8 @@ a, .btn-link {
 .sg-cell input {
   padding-top: 0;
   padding-left: 0;
-  line-height: 1em; }
+  line-height: 1em;
+  max-width: 100%; }
 
 #blazor-error-ui {
   background: lightyellow;

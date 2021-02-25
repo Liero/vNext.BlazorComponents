@@ -19,15 +19,13 @@ namespace vNext.BlazorComponents.Grid
 
         [Parameter] public RenderFragment<TRow>? ChildContent { get; set; }
 
-        [Parameter] public bool FitToContent { get; set; }
-
         [Parameter] public string Width { get; set; } = "auto";
 
         [Parameter] public string? CellClass { get; set; }
 
         [Parameter] public Func<Cell<TRow>, string?>? CellClassSelector { get; set; }
 
-        public string GridTemplateColumn => FitToContent ? "max-content" : Width;
+        public string GridTemplateColumn => ActualWidth.HasValue ? $"{ActualWidth}px" : Width;
 
         public bool IsFrozen { get; internal set; }
         public int Index { get; internal set; } = -1;
@@ -57,6 +55,8 @@ namespace vNext.BlazorComponents.Grid
                 return _frozenLeft;
             }
         }
+
+        internal double? ActualWidth { get; set; }
 
         protected override void OnInitialized()
         {
