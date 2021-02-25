@@ -32,10 +32,13 @@ namespace vNext.BlazorComponents.Grid
         }
 
         [Parameter] public EventCallback<ReadEventArgs<TRow>> OnRead { get; set; }
+        [Parameter] public Func<Row<TRow>, string?>? RowClassSelector { get; set; }
+
         [Parameter] public int OverscanCount { get; set; } = 3;
 
-
         [Parameter] public List<ColumnDef<TRow>> ColumnDefinitions { get; set; } = new List<ColumnDef<TRow>>();
+
+        [Parameter] public int FrozenColumns { get; set; } = 0;
 
         [Parameter] public string? CssClass { get; set; }
 

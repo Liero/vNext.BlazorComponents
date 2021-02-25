@@ -19,11 +19,11 @@
     </div>
     <div style="height: 500px">
 
-        <SimpleGrid TRow="Product" Items="_products" style="height: 100%" @ref="_grid">
-            <ColumnDef TRow="Product" Header="Id">
+        <SimpleGrid TRow="Product" Items="_products" style="height: 100%" @ref="_grid" FrozenColumns="2">
+            <ColumnDef TRow="Product" Header="Id" Width="3em">
                 @context.Id
             </ColumnDef>
-            <ColumnDef TRow="Product" Header="Name">
+            <ColumnDef TRow="Product" Header="Name" Width="15em">
                 <InputText @bind-Value="context.Name" />
             </ColumnDef>
             <ColumnDef TRow="Product" Header="Length">
@@ -36,13 +36,21 @@
                 <InputNumber @bind-Value="context.Height" />
             </ColumnDef>
             <ColumnDef TRow="Product" Header="Volume" CellClass="text-right"
-                       CellClassSelector="@(data => data.Volume > 100 ? "bg-danger" : "bg-success")">
+                       CellClassSelector="@(e => e.Data.Volume > 100 ? "bg-danger" : "bg-success")">
                 @((context.Volume / 1000).ToString("f3")) m<sup>3</sup>
+            </ColumnDef>
+
+            <ColumnDef TRow="Product" Header="Truncated text" CellClass="text-truncate" Width="200px">
+                <span class="text-truncate">some very looooooooooooooooooooooooong teeeeeeeeeeeeeeeeeeeeeeeeeeeeeext</span>
+            </ColumnDef>
+            <ColumnDef TRow="Product" Header="Long Text" Width="max-content">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
             </ColumnDef>
         </SimpleGrid>
 
-        <button type="button" @onclick="Reload">Reload</button>
+
     </div>
+    <button type="button" @onclick="Reload">Reload</button>
     <ValidationSummary />
 </EditForm>
 

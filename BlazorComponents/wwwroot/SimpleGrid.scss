@@ -1,6 +1,7 @@
 $spacer: 1em !default;
 $table-hover-color: inherit !default;
 $table-hover-bg: #e6f2fb;
+$table-bg: white;
 // simple grid
 .simple-grid {
     display: grid;
@@ -34,10 +35,15 @@ $table-hover-bg: #e6f2fb;
     grid-column: 1 / -1;
 }
 
-.sg-frozen-cell {
+.sg-cell-frozen {
     white-space: nowrap;
     position: sticky;
     z-index: 10;
+    background: $table-bg;
+
+    &.sg-header-cell {
+        z-index: 12;
+    }
 }
 
 .sg-header-cell {
