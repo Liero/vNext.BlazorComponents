@@ -1,11 +1,7 @@
-name: .NET
+name: Build .NET and publish to NUGET
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-    
+on: [push, pull_request]
+
 jobs:
   build:
 
@@ -40,6 +36,7 @@ jobs:
         path: BlazorComponents/bin/Release/*.nupkg
         
   publish:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
     needs: build
     runs-on: ubuntu-latest        
     
