@@ -6,7 +6,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Daniel Turan</Authors>
     <Company>vNext Software Consulting</Company>
-    <Version>0.3.0</Version>
+    <Version>0.3.1</Version>
     <PackageTags>Blazor DataGrid</PackageTags>
     <Description>High performace UI components for Blazor
  * SimpleGrid - virtualized datagrid with manual data operation, virtual and infinite scrolling
@@ -15,13 +15,15 @@
  * Container - just a container that does not produce any html, but allow to control rerendering of ChildContent</Description>
     <PackageReleaseNotes>
  #0.3
- SimpleGrid - Column Resizing
+ SimpleGrid
+  - Column resizing
+  - Row contextmenu
  
  #0.2
- SimpleGrid - Column Freezing
+ SimpleGrid - Column freezing
  
  #0.1
- SimpleGrid- Row Virtualization
+ SimpleGrid- Row virtualization
     </PackageReleaseNotes>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/Liero/vNext.BlazorComponents</PackageProjectUrl>

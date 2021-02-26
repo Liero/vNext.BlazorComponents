@@ -46,7 +46,8 @@ namespace vNext.BlazorComponents.Grid
 
         [Parameter] public RenderFragment ChildContent { get; set; } = default(RenderFragment)!;
 
-        [Parameter] public EventCallback<TRow> RowClicked { get; set; }
+        [Parameter] public EventCallback<RowMouseEventArgs<TRow>> OnRowClick { get; set; }
+        [Parameter] public EventCallback<RowMouseEventArgs<TRow>> OnRowContextMenu { get; set; }
 
 
         [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes { get; set; }
@@ -120,20 +121,5 @@ namespace vNext.BlazorComponents.Grid
         {
             _dotNetRef?.Dispose();
         }
-    }
-
-    public class ReadEventArgs<TRow>
-    {
-
-        public ReadEventArgs(int startIndex, int count)
-        {
-            StartIndex = startIndex;
-            Count = count;
-        }
-
-        public int StartIndex { get; }
-        public int Count { get; }
-        public int? Total { get; set; }
-        public IEnumerable<TRow> Items { get; set; } = Enumerable.Empty<TRow>();
     }
 }

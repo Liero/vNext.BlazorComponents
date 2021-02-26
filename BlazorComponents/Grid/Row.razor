@@ -1,5 +1,7 @@
 ﻿@typeparam TRow
-<div class="sg-row" @onclick="_ => Grid!.RowClicked.InvokeAsync(Data)">
+<div class="sg-row" 
+     @onclick="OnClick" 
+     @oncontextmenu="OnContextMenu" @oncontextmenu:preventDefault="Grid!.OnRowContextMenu.HasDelegate">
     @{ 
         if (cellRefs == null)
         {

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +27,6 @@ namespace vNext.BlazorComponents.Grid
             }
         }
 
-
         protected override void OnInitialized() => Grid!.AddRow(this);
 
         protected override bool ShouldRender() => _shouldRender;
@@ -36,6 +36,12 @@ namespace vNext.BlazorComponents.Grid
             _shouldRender = false;
             base.OnAfterRender(firstRender);
         }
+
+        protected virtual Task OnClick(MouseEventArgs mouseEvent) =>
+            Grid!.OnRowClick.InvokeAsync(new RowMouseEventArgs<TRow>(Data, mouseEvent));
+
+        protected virtual Task OnContextMenu(MouseEventArgs mouseEvent) =>
+            Grid!.OnRowContextMenu.InvokeAsync(new RowMouseEventArgs<TRow>(Data, mouseEvent));
 
         private string ResolveCssClass()
         {

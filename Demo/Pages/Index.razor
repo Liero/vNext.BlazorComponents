@@ -19,7 +19,10 @@
     </div>
     <div style="height: 500px">
 
-        <SimpleGrid TRow="Product" Items="_products" style="height: 100%" @ref="_grid" FrozenColumns="2" @key="_moreColumns">
+        <SimpleGrid TRow="Product" Items="_products" style="height: 100%" FrozenColumns="2"
+                    OnRowClick="OnRowClick" OnRowContextMenu="OnRowContextMenu"
+                    @ref="_grid"
+                    @key="_moreColumns">
             <ColumnDef TRow="Product" Header="Id" Width="3em">
                 @context.Id
             </ColumnDef>
@@ -56,6 +59,9 @@
     <button type="button" @onclick="Reload">Reload</button>
     <label><input type="checkbox" @onchange="MoreColumnsChanged" /> Show more columns</label>
     <ValidationSummary />
+
+    <div>Clicked Row: @_clickedRow?.Id</div>
+    <div>Right Clicked Row: @_rightClickedRow?.Id</div>
 </EditForm>
 
 @code
@@ -63,6 +69,8 @@
     [Inject] ProductsService ProductsService { get; set; }
 
     Product[] _products;
+    Product _clickedRow;
+    Product _rightClickedRow;
     SimpleGrid<Product> _grid;
     Container _totalVolume;
     Container _totalVolumeExplicit;
@@ -102,5 +110,14 @@
                     break;
             }
         }
+    }
+
+    void OnRowClick(RowMouseEventArgs<Product> args)
+    {
+        _clickedRow = (Product)args.Data;
+    }
+    void OnRowContextMenu(RowMouseEventArgs<Product> args)
+    {
+        _rightClickedRow = (Product)args.Data;
     }
 }
