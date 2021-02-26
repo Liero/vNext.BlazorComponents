@@ -36,7 +36,7 @@ jobs:
         path: BlazorComponents/bin/Release/*.nupkg
         
   publish:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     needs: build
     runs-on: ubuntu-latest        
     
