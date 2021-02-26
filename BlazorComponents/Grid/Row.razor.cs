@@ -12,7 +12,7 @@ namespace vNext.BlazorComponents.Grid
     public partial class Row<TRow> : IDisposable
     {
         private bool _shouldRender = true;
-        private List<CellRef>? cellRefs;
+        private List<CellRef>? _cellRefs;
 
         [Parameter] public TRow? Data { get; set; }
 
@@ -21,10 +21,15 @@ namespace vNext.BlazorComponents.Grid
         public void Refresh(bool refreshCells = true)
         {
             _shouldRender = true;
-            if (refreshCells && cellRefs != null)
+            if (refreshCells && _cellRefs != null)
             {
-                cellRefs.ForEach(c => c.Ref?.Refresh());
+                _cellRefs.ForEach(c => c.Ref?.Refresh());
             }
+        }
+
+        public Cell<TRow>? FindCell(ColumnDef<TRow> column)
+        {
+            return _cellRefs?.Find(c => c.Column == column)?.Ref;
         }
 
         protected override void OnInitialized() => Grid!.AddRow(this);

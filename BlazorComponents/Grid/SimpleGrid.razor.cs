@@ -16,6 +16,7 @@ namespace vNext.BlazorComponents.Grid
         private string? _gridTemplateColumns;
         private ElementReference? _elementRef;
         private DotNetObjectReference<SimpleGrid<TRow>>? _dotNetRef;
+        private IJSObjectReference? _jsApi;
         private HashSet<Row<TRow>> _rows = new();
         private ICollection<TRow>? _items;
         #region parameters
@@ -54,9 +55,9 @@ namespace vNext.BlazorComponents.Grid
 
 
         #endregion
-
+        internal List<Header<TRow>> Headers { get; } = new List<Header<TRow>>();
         public string GridTemplateColumns =>
-            _gridTemplateColumns ?? (_gridTemplateColumns = string.Join(' ', ColumnDefinitions.Select(c => c.GridTemplateColumn)));
+            _gridTemplateColumns ?? (_gridTemplateColumns = string.Join(' ', ColumnDefinitions.Select(c => c.GridTemplateWidth)));
 
         public void Refresh()
         {
@@ -75,14 +76,33 @@ namespace vNext.BlazorComponents.Grid
         internal void RemoveRow(Row<TRow> row) => _rows.Remove(row);
 
         [JSInvokable]
-        public void OnResizeInterop(int columnIndex, double[] columnWidths)
+        public async Task OnResizeInterop(int columnIndex, double[] columnWidths)
         {
-            for (int i = 0; i < columnWidths.Length; i++)
+            await InvokeAsync(() =>
             {
-                ColumnDefinitions[i].ActualWidth = columnWidths[i];
-            }
-            _gridTemplateColumns = null;
+                for (int i = 0; i < columnWidths.Length; i++)
+                {
+                    ColumnDefinitions[i].ActualWidth = columnWidths[i];
+                }
+
+                //frozen columns have style.left= calculated, which must be refreshed.  Dynamic css classIt would be nicer though
+                for (int i = columnIndex + 1; i <= FrozenColumns; i++)
+                {
+                    var column = ColumnDefinitions[i];
+                    column.Invalidate();
+                    Headers.Find(h => h.ColumnDef == column)?.Refresh();
+                    foreach (var row in _rows)
+                    {
+                        row.FindCell(column)?.Refresh();
+                        row.Refresh(false);
+                    }
+                }
+
+                _gridTemplateColumns = null;
+                StateHasChanged();
+            });           
         }
+
 
         internal void Invalidate()
         {
@@ -100,7 +120,7 @@ namespace vNext.BlazorComponents.Grid
             _dotNetRef = DotNetObjectReference.Create(this);
             if (firstRender)
             {
-                await JS!.InvokeAsync<IJSObjectReference>("vNext.initGrid", _elementRef, _dotNetRef);
+                _jsApi = await JS!.InvokeAsync<IJSObjectReference>("vNext.initGrid", _elementRef, _dotNetRef);
             }
             if (_rows.Count > 0)
             {
@@ -120,6 +140,7 @@ namespace vNext.BlazorComponents.Grid
         void IDisposable.Dispose()
         {
             _dotNetRef?.Dispose();
+            _jsApi?.DisposeAsync().GetAwaiter();
         }
     }
 }

@@ -3,12 +3,12 @@
      @onclick="OnClick" 
      @oncontextmenu="OnContextMenu" @oncontextmenu:preventDefault="Grid!.OnRowContextMenu.HasDelegate">
     @{ 
-        if (cellRefs == null)
+        if (_cellRefs == null)
         {
-            cellRefs = Grid!.ColumnDefinitions.Select(c => new CellRef(c)).ToList();
+            _cellRefs = Grid!.ColumnDefinitions.Select(c => new CellRef(c)).ToList();
         }
     }
-    @foreach (var cellRef in cellRefs)
+    @foreach (var cellRef in _cellRefs)
     {
         <Cell Data="Data" ColumnDef="cellRef.Column!" @key="cellRef" @ref="cellRef.Ref"></Cell>
     }

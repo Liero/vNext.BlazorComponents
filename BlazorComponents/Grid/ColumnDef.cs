@@ -25,7 +25,7 @@ namespace vNext.BlazorComponents.Grid
 
         [Parameter] public Func<Cell<TRow>, string?>? CellClassSelector { get; set; }
 
-        public string GridTemplateColumn => ActualWidth.HasValue ? $"{ActualWidth}px" : Width;
+        public string GridTemplateWidth => ActualWidth.HasValue ? $"{ActualWidth}px" : Width;
 
         public bool IsFrozen { get; internal set; }
         public int Index { get; internal set; } = -1;
@@ -48,7 +48,7 @@ namespace vNext.BlazorComponents.Grid
                     {
                         var widths = Grid!.ColumnDefinitions
                             .TakeWhile(c => c != this)
-                            .Select(c => c.Width);
+                            .Select(c => c.GridTemplateWidth);
                         _frozenLeft = $"left: calc({string.Join(" + ", widths)});";
                     }
                 }
@@ -57,6 +57,11 @@ namespace vNext.BlazorComponents.Grid
         }
 
         internal double? ActualWidth { get; set; }
+
+        internal void Invalidate()
+        {
+            _frozenLeft = null;
+        }
 
         protected override void OnInitialized()
         {
