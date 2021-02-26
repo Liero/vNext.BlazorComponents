@@ -19,17 +19,17 @@
     </div>
     <div style="height: 500px">
 
-        <SimpleGrid TRow="Product" Items="_products" style="height: 100%" @ref="_grid" FrozenColumns="2">
+        <SimpleGrid TRow="Product" Items="_products" style="height: 100%" @ref="_grid" FrozenColumns="2" @key="_moreColumns">
             <ColumnDef TRow="Product" Header="Id" Width="3em">
                 @context.Id
             </ColumnDef>
-            <ColumnDef TRow="Product" Header="Name" Width="15em">
-                <InputText @bind-Value="context.Name" />
+            <ColumnDef TRow="Product" Header="Name" Width="minmax(5em, auto)">
+                <InputText @bind-Value="context.Name" class="w-100" />
             </ColumnDef>
-            <ColumnDef TRow="Product" Header="Length" Width="max-content">
+            <ColumnDef TRow="Product" Header="Length">
                 <InputNumber @bind-Value="context.Length" />
             </ColumnDef>
-            <ColumnDef TRow="Product" Header="Width"  Width="min-content">
+            <ColumnDef TRow="Product" Header="Width">
                 <InputNumber @bind-Value="context.Width" />
             </ColumnDef>
             <ColumnDef TRow="Product" Header="Height" Width="100px">
@@ -40,17 +40,21 @@
                 @((context.Volume / 1000).ToString("f3")) m<sup>3</sup>
             </ColumnDef>
 
-            <ColumnDef TRow="Product" Header="Truncated text" CellClass="text-truncate" Width="200px">
-                <span class="text-truncate">some very looooooooooooooooooooooooong teeeeeeeeeeeeeeeeeeeeeeeeeeeeeext</span>
-            </ColumnDef>
-            <ColumnDef TRow="Product" Header="Long Text" Width="max-content">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-            </ColumnDef>
+            @if (_moreColumns)
+            {
+                <ColumnDef TRow="Product" Header="Truncated text" CellClass="text-truncate" Width="200px">
+                    <span class="text-truncate">some very looooooooooooooooooooooooong teeeeeeeeeeeeeeeeeeeeeeeeeeeeeext</span>
+                </ColumnDef>
+                <ColumnDef TRow="Product" Header="Long Text" Width="max-content">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                </ColumnDef>
+            }
         </SimpleGrid>
 
 
     </div>
     <button type="button" @onclick="Reload">Reload</button>
+    <label><input type="checkbox" @onchange="MoreColumnsChanged" /> Show more columns</label>
     <ValidationSummary />
 </EditForm>
 
@@ -63,6 +67,7 @@
     Container _totalVolume;
     Container _totalVolumeExplicit;
     EditContext _editContext;
+    private bool _moreColumns = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -71,10 +76,15 @@
         await Reload();
     }
 
-    protected async Task Reload()
+    private async Task Reload()
     {
         _products = await ProductsService.GetProducts();
         _totalVolumeExplicit.Refresh();
+    }
+
+    void MoreColumnsChanged(ChangeEventArgs args)
+    {
+        _moreColumns = (bool)args.Value;
     }
 
     void OnFieldChanged(object sender, FieldChangedEventArgs args)

@@ -19,7 +19,7 @@ namespace vNext.BlazorComponents.Grid
 
         [Parameter] public RenderFragment<TRow>? ChildContent { get; set; }
 
-        [Parameter] public string Width { get; set; } = "auto";
+        [Parameter] public string Width { get; set; } = "min-content";
 
         [Parameter] public string? CellClass { get; set; }
 
