@@ -15,11 +15,14 @@ var vNext;
             this.dotNetRef = dotNetRef;
 
             elementRef.addEventListener('mousedown', evt => {
-                /** @type Element */
+                /** @type HTMLElement */
                 var target = evt.target;
                 if (target.matches('.sg-header-cell-resize')) {
                     evt.stopPropagation();
                     this.startResize(evt);
+                }
+                if (target.matches('input') && evt.shiftKey) {
+                    target.focus();
                 }
             });
             /** @type HTMLElement */

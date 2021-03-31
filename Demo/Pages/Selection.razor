@@ -1,0 +1,101 @@
+﻿@page "/selection"
+@using vNext.BlazorComponents.Grid
+@using vNext.BlazorComponents.Data;
+@using vNext.BlazorComponents.Demo.Data;
+
+<h1>Hello, world!</h1>
+<EditForm EditContext="_editContext" Context="model">
+    <DataAnnotationsValidator />
+
+    <div style="height: 500px">
+
+        <SimpleGrid TRow="Product" Items="_products" SelectedItems="_selection.SelectedItems" style="height: 100%" FrozenColumns="2"
+                    OnRowClick="OnRowClick"
+                    @ref="_grid" CssClass="user-select-none">
+            <ColumnDef TRow="Product" Header="Id" Width="3em">
+                @context.Id
+            </ColumnDef>
+            <ColumnDef TRow="Product" Header="Name" Width="minmax(5em, auto)">
+                <InputText @bind-Value="context.Name" class="w-100" />
+            </ColumnDef>
+            <ColumnDef TRow="Product" Header="Length">
+                <InputNumber @bind-Value="context.Length" />
+            </ColumnDef>
+            <ColumnDef TRow="Product" Header="Width">
+                <InputNumber @bind-Value="context.Width" />
+            </ColumnDef>
+            <ColumnDef TRow="Product" Header="Height" Width="100px">
+                <InputNumber @bind-Value="context.Height" />
+            </ColumnDef>
+            <ColumnDef TRow="Product" Header="Volume" CellClass="text-right" Width="min-content"
+                       CellClassSelector="@(e => e.Data.Volume > 100 ? "bg-danger" : "bg-success")">
+                @((context.Volume / 1000).ToString("f3")) m<sup>3</sup>
+            </ColumnDef>
+        </SimpleGrid>
+
+
+    </div>
+    <button type="button" @onclick="Reload">Reload</button>
+    <ValidationSummary />
+
+    <div>Clicked Row: @_clickedRow?.Id</div>
+</EditForm>
+
+@code
+{
+    [Inject] ProductsService ProductsService { get; set; }
+
+    Product[] _products;
+    Product _clickedRow;
+    SimpleGrid<Product> _grid;
+    SelectionModel<Product> _selection = new SelectionModel<Product>(ProjectionEqualityComparer<Product>.Create(p => p.Id));
+    EditContext _editContext;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _selection.GetRange = range => Task.FromResult(_products.Skip(range.From).Take(range.Count));
+        _editContext = new EditContext(this);
+        _editContext.OnFieldChanged += OnFieldChanged;
+        await Reload();
+    }
+
+    private async Task Reload()
+    {
+        _products = await ProductsService.GetProducts();
+    }
+
+    void OnFieldChanged(object sender, FieldChangedEventArgs args)
+    {
+        if (args.FieldIdentifier.Model is Product product)
+        {
+            _grid.FindRow(product)?.Refresh();
+
+            switch (args.FieldIdentifier.FieldName)
+            {
+                case nameof(Product.Height):
+                case nameof(Product.Width):
+                case nameof(Product.Length):
+                    // _totalVolume.Refresh();
+                    break;
+            }
+
+            if (_grid.SelectedItems.Contains(product) && _grid.SelectedItems.Count > 1)
+            {
+                var value = Utils.PathEvaluator.GetProperty(args.FieldIdentifier.Model, args.FieldIdentifier.FieldName).GetValue();
+                foreach (var selectedProduct in _grid.SelectedItems)
+                {
+                    var prop = Utils.PathEvaluator.GetProperty(selectedProduct, args.FieldIdentifier.FieldName);
+                    prop.TrySetValue(value);
+                }
+            }
+        }
+    }
+
+    void OnRowClick(RowMouseEventArgs<Product> args)
+    {
+        _clickedRow = (Product)args.Data;
+        _selection.Select(args.Data, args.Index, args.EventArgs.CtrlKey, args.EventArgs.ShiftKey).GetAwaiter().GetResult();
+    }
+
+
+}

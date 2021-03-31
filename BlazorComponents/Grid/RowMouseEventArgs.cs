@@ -4,13 +4,15 @@ namespace vNext.BlazorComponents.Grid
 {
     public class RowMouseEventArgs<TRow>
     {
-        public RowMouseEventArgs(TRow? data, MouseEventArgs eventArgs)
+        public RowMouseEventArgs(Row<TRow>? row, MouseEventArgs eventArgs)
         {
-            Data = data;
+            Row = row;
             EventArgs = eventArgs;
         }
 
-        public TRow? Data { get; }
+        public TRow? Data => Row == null ? default(TRow) : Row.Data;
+        public int? Index => Row?.Index;
+        public Row<TRow>? Row { get; }
         public MouseEventArgs EventArgs { get; }
     }
 }

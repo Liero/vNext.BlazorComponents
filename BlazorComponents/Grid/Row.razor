@@ -1,6 +1,6 @@
 ﻿@typeparam TRow
-<div class="sg-row" 
-     @onclick="OnClick" 
+<div class="sg-row @ResolveCssClass()" 
+     @onclick="OnClick" data-row-index="@Index"
      @oncontextmenu="OnContextMenu" @oncontextmenu:preventDefault="Grid!.OnRowContextMenu.HasDelegate">
     @{ 
         if (_cellRefs == null)

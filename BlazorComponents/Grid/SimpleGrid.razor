@@ -14,12 +14,12 @@
                     <Header ColumnDef="col" @key="col" />
                 }
             </div>
-            <Virtualize Items="Items" 
-                        ItemsProvider="@(Items == null ? ProvideItems : null)"
+            <Virtualize Items="_wrappedItems" 
+                        ItemsProvider="@(_wrappedItems == null ? ProvideItems : null)"
                         OverscanCount="OverscanCount"
                         Context="row">
                 <ItemContent>
-                    <Row Data="row" @key="row" />
+                    <Row Data="row.Row" Index="row.Index" @key="row.Row" />
                 </ItemContent>
                 <Placeholder>
                     <div class="sg-row">

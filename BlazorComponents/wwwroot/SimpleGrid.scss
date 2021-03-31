@@ -1,6 +1,8 @@
 $spacer: 1em !default;
+$table-selected-color: inherit !default;
+$table-selected-bg: #e6f2fb !default;
 $table-hover-color: inherit !default;
-$table-hover-bg: #e6f2fb !default;
+$table-hover-bg: rgba(0,0,0,0.04) !default;
 $table-bg: white !default;
 $table-border-color: #f3f2f1 !default;
 // simple grid
@@ -8,6 +10,10 @@ $table-border-color: #f3f2f1 !default;
     display: grid;
     overflow: auto;
     flex-grow: 1;
+    --sg-grid-hover-bg: $table-hover-bg;
+    --sg-grid-hover-color: $table-hover-color;
+    --sg-grid-selected-bg: $table-selected-bg;
+    --sg-grid-selected-color: $table-selected-color;
 }
 
 .sg-container {
@@ -33,6 +39,7 @@ $table-border-color: #f3f2f1 !default;
     border-color: #f3f2f1;
     overflow: hidden;
 }
+
 .sg-placeholder {
     grid-column: 1 / -1;
 }
@@ -72,13 +79,19 @@ $table-border-color: #f3f2f1 !default;
 
 .sg-row {
     &:hover > .sg-cell {
-        color: $table-hover-color;
-        background-color: $table-hover-bg;
+        color: var(--sg-grid-hover-color);
+        background-color: var(--sg-grid-hover-bg);
     }
 
     &:nth-child(even) > .sg-cell {
     }
+
+    &.sg-row-selected > .sg-cell {
+        color: var(--sg-grid-selected-color);
+        background-color: var(--sg-grid-selected-bg);
+    }
 }
+
 
 
 .sg-cell-input > * {

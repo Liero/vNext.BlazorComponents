@@ -1,6 +1,4 @@
-﻿#pragma warning disable CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.JSInterop;
 using System;
@@ -19,6 +17,8 @@ namespace vNext.BlazorComponents.Grid
         private IJSObjectReference? _jsApi;
         private HashSet<Row<TRow>> _rows = new();
         private ICollection<TRow>? _items;
+        private ICollection<RowWrapper>? _wrappedItems;
+        private ICollection<TRow> _selectedItems = Array.Empty<TRow>();
         #region parameters
 
         [Inject] protected IJSRuntime? JS { get; set; }
@@ -29,6 +29,7 @@ namespace vNext.BlazorComponents.Grid
             get => _items; set
             {
                 _items = value;
+                _wrappedItems = _items?.Select((item, i) => new RowWrapper(i, item)).ToList();
                 Invalidate();
             }
         }
@@ -53,7 +54,23 @@ namespace vNext.BlazorComponents.Grid
 
         [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
-
+        [Parameter]
+        public ICollection<TRow> SelectedItems
+        {
+            get => _selectedItems; 
+            set
+            {
+                if (_selectedItems != value)
+                {
+                    var affectedItems = _selectedItems.Concat(value).Distinct();
+                    _selectedItems = value;
+                    foreach(var item in affectedItems)
+                    {
+                        FindRow(item)?.Refresh(false);
+                    }
+                }
+            }        
+        }
         #endregion
         internal List<Header<TRow>> Headers { get; } = new List<Header<TRow>>();
         public string GridTemplateColumns =>
@@ -100,7 +117,7 @@ namespace vNext.BlazorComponents.Grid
 
                 _gridTemplateColumns = null;
                 StateHasChanged();
-            });           
+            });
         }
 
 
@@ -130,11 +147,12 @@ namespace vNext.BlazorComponents.Grid
 
         protected override bool ShouldRender() => _shouldRender;
 
-        protected virtual async ValueTask<ItemsProviderResult<TRow>> ProvideItems(ItemsProviderRequest request)
+        protected virtual async ValueTask<ItemsProviderResult<RowWrapper>> ProvideItems(ItemsProviderRequest request)
         {
             var args = new ReadEventArgs<TRow>(request.StartIndex, request.Count);
             await OnRead.InvokeAsync(args);
-            return new ItemsProviderResult<TRow>(args.Items, args.Total.GetValueOrDefault());
+            var refs = args.Items.Select((item, index) => new RowWrapper(request.StartIndex + index, item));
+            return new ItemsProviderResult<RowWrapper>(refs, args.Total.GetValueOrDefault());
         }
 
         void IDisposable.Dispose()
@@ -142,5 +160,10 @@ namespace vNext.BlazorComponents.Grid
             _dotNetRef?.Dispose();
             _jsApi?.DisposeAsync().GetAwaiter();
         }
+
+        /// <summary>
+        /// just to keep index of the row
+        /// </summary>
+        protected record RowWrapper(int Index, TRow Row);
     }
 }

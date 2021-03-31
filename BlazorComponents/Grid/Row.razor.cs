@@ -3,9 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using vNext.BlazorComponents.Grid;
 
 namespace vNext.BlazorComponents.Grid
 {
@@ -15,8 +13,10 @@ namespace vNext.BlazorComponents.Grid
         private List<CellRef>? _cellRefs;
 
         [Parameter] public TRow? Data { get; set; }
-
+        [Parameter] public int Index { get; set; }
         [CascadingParameter(Name = "Grid")] public SimpleGrid<TRow>? Grid { get; set; }
+
+        public bool IsSelected => Grid!.SelectedItems?.Contains(Data!) == true;
 
         public void Refresh(bool refreshCells = true)
         {
@@ -43,14 +43,18 @@ namespace vNext.BlazorComponents.Grid
         }
 
         protected virtual Task OnClick(MouseEventArgs mouseEvent) =>
-            Grid!.OnRowClick.InvokeAsync(new RowMouseEventArgs<TRow>(Data, mouseEvent));
+            Grid!.OnRowClick.InvokeAsync(new RowMouseEventArgs<TRow>(this, mouseEvent));
 
         protected virtual Task OnContextMenu(MouseEventArgs mouseEvent) =>
-            Grid!.OnRowContextMenu.InvokeAsync(new RowMouseEventArgs<TRow>(Data, mouseEvent));
+            Grid!.OnRowContextMenu.InvokeAsync(new RowMouseEventArgs<TRow>(this, mouseEvent));
 
         private string ResolveCssClass()
         {
             string result = "sg-row ";
+            if (IsSelected)
+            {
+                result += "sg-row-selected ";
+            }
             if (Grid!.RowClassSelector != null)
             {
                 result += Grid.RowClassSelector(this);
