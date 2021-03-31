@@ -10,10 +10,10 @@ $table-border-color: #f3f2f1 !default;
     display: grid;
     overflow: auto;
     flex-grow: 1;
-    --sg-grid-hover-bg: $table-hover-bg;
-    --sg-grid-hover-color: $table-hover-color;
-    --sg-grid-selected-bg: $table-selected-bg;
-    --sg-grid-selected-color: $table-selected-color;
+    --sg-grid-hover-bg: #{$table-hover-bg};
+    --sg-grid-hover-color: #{$table-hover-color};
+    --sg-grid-selected-bg: #{$table-selected-bg};
+    --sg-grid-selected-color: #{$table-selected-color};
 }
 
 .sg-container {
