@@ -1,0 +1,170 @@
+﻿@page "/ordering"
+@using vNext.BlazorComponents.Grid
+@using vNext.BlazorComponents.Data
+@using vNext.BlazorComponents.Demo.Data;
+<h1>Ordering</h1>
+
+@if (_sortDefinitions.Count > 0)
+{
+    <div>
+        Sort By:
+        @foreach (var sort in _sortDefinitions)
+        {
+            <span class="badge badge-info mr-1">
+                @sort.Field
+                @if (sort.Descending)
+                {
+                    <span class="font-italic ml-2">desc</span>
+                }
+            </span>
+        }
+    </div>
+}
+
+<SimpleGrid TRow="Product" Items="_products" style="height: 500px"
+            OnHeaderClick="HeaderClicked"
+            @ref="_grid">
+    <ColumnDef IsDefault="true" TRow="Product" HeaderClassSelector="HeaderClassSelector" />
+
+    <ColumnDef TRow="Product">
+        <button type="button" class="btn btn-link" title="This column is not sortable">...</button>
+    </ColumnDef>
+    <ColumnDef TRow="Product" Field="Id" Width="3em">
+        @context.Id
+    </ColumnDef>
+    <ColumnDef TRow="Product" Field="Name" Width="minmax(5em, auto)">
+        @context.Name
+    </ColumnDef>
+    <ColumnDef TRow="Product" Field="Length">
+        @context.Length
+    </ColumnDef>
+    <ColumnDef TRow="Product" Field="Width">
+        @context.Width
+    </ColumnDef>
+    <ColumnDef TRow="Product" Field="Height" Width="100px">
+        @context.Height
+    </ColumnDef>
+    <ColumnDef TRow="Product" Header="Volume" CellClass="text-right" Width="min-content"
+               CellClassSelector="@(e => e.Data.Volume > 100 ? "bg-danger" : "bg-success")">
+        @((context.Height * context.Width * context.Length / 1000).ToString("f3")) m<sup>3</sup>
+    </ColumnDef>
+</SimpleGrid>
+
+<style>
+    .sortable {
+        cursor: pointer;
+    }
+
+    .sort-asc::after {
+        content: ' \2191';
+    }
+
+    .sort-desc::after {
+        content: ' \2193';
+    }
+</style>
+<button type="button" @onclick="Reload">Reload</button>
+
+@code
+{
+    [Inject] ProductsService ProductsService { get; set; }
+
+    Product[] _products;
+    SimpleGrid<Product> _grid;
+
+
+    List<Sort<Product>> _sortDefinitions = new List<Sort<Product>>
+    {
+        new Sort<Product>(nameof(Product.Name))
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Reload();
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    private string HeaderClassSelector(ColumnDef<Product> column)
+    {
+        if (column.Field == null) return null;
+        var css = "sortable";
+        var sort = _sortDefinitions.FirstOrDefault(c => c.Field == column.Field);
+        if (sort != null)
+        {
+            css += sort.Descending ? " sort-desc" : " sort-asc";
+        }
+        return css;
+    }
+
+    private async Task Reload()
+    {
+        _products = await ProductsService.GetProducts();
+        var query = _products.AsQueryable();
+        for (int i = 0; i < _sortDefinitions.Count; i++)
+        {
+            var sort = _sortDefinitions[i];
+            var lambda = FieldUtils.CreatePropertyLambda<Product>(sort.Field);
+            query = query.OrderBy(lambda, sort.Descending, i > 0);
+        }
+        _products = query.ToArray();
+    }
+
+    /// <summary>
+    /// Update sort definitions
+    /// </summary>
+    async Task HeaderClicked(HeaderMouseEventArgs<Product> args)
+    {
+        if (args.ColumnDef.Field == null)
+        {
+            return;
+        }
+        Sort<Product> existing = _sortDefinitions.Find(s => s.Field == args.Header.ColumnDef.Field);
+        Sort<Product> sort = new(args.Header.ColumnDef.Field, existing == default ? false : !existing.Descending);
+        if (!args.EventArgs.ShiftKey)
+        {
+            _sortDefinitions.Clear();
+        }
+        if (existing == default || _sortDefinitions.Count == 0)
+        {
+            _sortDefinitions.Add(sort);
+        }
+        else
+        {
+            _sortDefinitions[_sortDefinitions.IndexOf(existing)] = sort;
+        }
+        await Reload();
+    }
+
+    void OnFieldChanged(object sender, FieldChangedEventArgs args)
+    {
+        if (args.FieldIdentifier.Model is Product product)
+        {
+            _grid.FindRow(product)?.Refresh();
+
+            switch (args.FieldIdentifier.FieldName)
+            {
+                case nameof(Product.Height):
+                case nameof(Product.Width):
+                case nameof(Product.Length):
+                    // _totalVolume.Refresh();
+                    break;
+            }
+
+            if (_grid.SelectedItems.Contains(product) && _grid.SelectedItems.Count > 1)
+            {
+                var value = Utils.PathEvaluator.GetProperty(args.FieldIdentifier.Model, args.FieldIdentifier.FieldName).GetValue();
+                foreach (var selectedProduct in _grid.SelectedItems)
+                {
+                    var prop = Utils.PathEvaluator.GetProperty(selectedProduct, args.FieldIdentifier.FieldName);
+                    prop.TrySetValue(value);
+                }
+            }
+        }
+    }
+
+    record Sort<T>(string Field, bool Descending = false)
+    {
+    }
+}
