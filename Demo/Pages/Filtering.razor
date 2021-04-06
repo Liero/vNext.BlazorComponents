@@ -1,0 +1,133 @@
+﻿@page "/filtering"
+@using vNext.BlazorComponents.Grid
+@using vNext.BlazorComponents.Data
+@using vNext.BlazorComponents.Demo.Data;
+<h3>Filtering</h3>
+
+<Container @ref="_filterMenu">
+    <EditForm Model="FilteringModel"
+              Context="FilteringEditContext" 
+              OnValidSubmit="FilteringModel.AddFilter"              
+              class="d-flex align-items-center mb-1">
+        <DataAnnotationsValidator />
+        <InputSelect @bind-Value="FilteringModel.SelectedField" class="form-control" placeholder="select field">
+            <option hidden class="text-muted">Field</option>
+            @if (_grid != null)
+            {
+                @foreach (var header in _grid.GetHeaders().Where(h => h.ColumnDef.Field != null))
+                {
+                    <option value="@header.ColumnDef.Field">@header.Text</option>
+                }
+            }
+        </InputSelect>
+        <InputSelect @bind-Value="FilteringModel.SelectedOperator" class="form-control">
+            <option hidden class="text-muted">Operator</option>
+            @foreach (var operator_ in FilteringModel.AvailableOperators)
+            {
+                <option value="@operator_">@operator_</option>
+            }
+        </InputSelect>
+        <InputText @bind-Value="FilteringModel.ValueAsString" class="form-control" placeholder="value"></InputText>
+        <button type="submit" class="btn btn-sm btn-outline-secondary">Add</button>        
+    </EditForm>
+
+
+    @if (FilteringModel.FilterDescriptors.Count > 0)
+    {
+        <div class="d-flex align-items-center">
+            Filters:
+            @foreach (FilterDescriptor filter in FilteringModel.FilterDescriptors)
+            {
+                <span class="mr-1">
+                    <span class="badge badge-info">
+                        @filter.Field
+                        @filter.Operator
+                        @filter.Value
+                    </span><a class="badge badge-info" @onclick="_ => FilteringModel.FilterDescriptors.Remove(filter)">
+                        &times;
+                    </a>
+                </span>
+            }
+            <button type="button" class="btn btn-sm btn-outline-info" @onclick="FilteringModel.FilterDescriptors.Clear">Clear</button>
+        </div>
+    }
+</Container>
+
+<SimpleGrid TRow="Product" Items="_filteredProducts" style="max-height: 500px;"
+            @ref="_grid">
+    <ColumnDef TRow="Product">
+        <button type="button" class="btn btn-link" title="This column is not sortable">...</button>
+    </ColumnDef>
+    <ColumnDef TRow="Product" Field="Id" Width="3em">
+        @context.Id
+    </ColumnDef>
+    <ColumnDef TRow="Product" Field="Name" Width="minmax(5em, auto)">
+        @context.Name
+    </ColumnDef>
+    <ColumnDef TRow="Product" Field="Length">
+        @context.Length
+    </ColumnDef>
+    <ColumnDef TRow="Product" Field="Width">
+        @context.Width
+    </ColumnDef>
+    <ColumnDef TRow="Product" Field="Height" Width="100px">
+        @context.Height
+    </ColumnDef>
+    <ColumnDef TRow="Product" Header="Volume" CellClass="text-right" Width="min-content"
+               CellClassSelector="@(e => e.Data.Volume > 100 ? "bg-danger" : "bg-success")">
+        @((context.Height * context.Width * context.Length / 1000).ToString("f3")) m<sup>3</sup>
+    </ColumnDef>
+</SimpleGrid>
+<div>
+   Count: @_filteredProducts?.Length of @_products?.Length
+</div>
+
+<button type="button" @onclick="Reload">Reload</button>
+
+@code
+{
+    [Inject] ProductsService ProductsService { get; set; }
+
+    Product[] _products;
+    Product[] _filteredProducts;
+    Container _filterMenu;
+    SimpleGrid<Product> _grid;
+
+    FilteringModel<Product> FilteringModel = new FilteringModel<Product>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        FilteringModel.FilterDescriptors.CollectionChanged += (o, e) => ApplyFilters();
+        await Reload();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        if (firstRender)
+        {
+            _filterMenu.Refresh(); // refresh menu after columndefinitions has been rendered
+        }
+    }
+
+    private async Task Reload()
+    {
+        _products = await ProductsService.GetProducts();
+        ApplyFilters();
+    }
+
+
+    private void ApplyFilters()
+    {
+        var query = _products.AsQueryable();
+        foreach (var filter in FilteringModel.FilterDescriptors)
+        {
+            var lambda = filter.CreatePredicate<Product>();
+            query = query.Where(lambda);
+        }
+        _filteredProducts = query.ToArray();
+    }
+
+
+
+}

@@ -13,7 +13,11 @@ namespace vNext.BlazorComponents.Grid
 
         [CascadingParameter(Name = "Grid")] internal SimpleGrid<TRow>? Grid { get; set; }
 
+        [Parameter] public bool IsDefault { get; set; }
+        [Parameter] public string? Field { get; set; }
+
         [Parameter] public string? Header { get; set; }
+        [Parameter] public RenderFragment<Header<TRow>>? HeaderTemplate { get; set; }
         [Parameter] public string? HeaderClass { get; set; }
         [Parameter] public Func<ColumnDef<TRow>, string?>? HeaderClassSelector { get; set; }
 

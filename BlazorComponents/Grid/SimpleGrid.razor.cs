@@ -41,6 +41,8 @@ namespace vNext.BlazorComponents.Grid
 
         [Parameter] public List<ColumnDef<TRow>> ColumnDefinitions { get; set; } = new List<ColumnDef<TRow>>();
 
+        public ColumnDef<TRow>?  DefaultColumn { get; set; }
+
         [Parameter] public int FrozenColumns { get; set; } = 0;
 
         [Parameter] public string? CssClass { get; set; }
@@ -50,6 +52,7 @@ namespace vNext.BlazorComponents.Grid
 
         [Parameter] public EventCallback<RowMouseEventArgs<TRow>> OnRowClick { get; set; }
         [Parameter] public EventCallback<RowMouseEventArgs<TRow>> OnRowContextMenu { get; set; }
+        [Parameter] public EventCallback<HeaderMouseEventArgs<TRow>> OnHeaderClick { get; set; }
 
 
         [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes { get; set; }
@@ -73,6 +76,7 @@ namespace vNext.BlazorComponents.Grid
         }
         #endregion
         internal List<Header<TRow>> Headers { get; } = new List<Header<TRow>>();
+
         public string GridTemplateColumns =>
             _gridTemplateColumns ?? (_gridTemplateColumns = string.Join(' ', ColumnDefinitions.Select(c => c.GridTemplateWidth)));
 
@@ -82,11 +86,20 @@ namespace vNext.BlazorComponents.Grid
             StateHasChanged();
         }
 
+        public IEnumerable<Header<TRow>> GetHeaders() => Headers;
+
         public Row<TRow>? FindRow(TRow row) => _rows.FirstOrDefault(r => Object.Equals(r.Data, row));
 
         internal void AddColumnDefinition(ColumnDef<TRow> columnDef)
         {
-            ColumnDefinitions.Add(columnDef);
+            if (columnDef.IsDefault)
+            {
+                DefaultColumn = columnDef;
+            }
+            else
+            {
+                ColumnDefinitions.Add(columnDef);
+            }
             Refresh();
         }
         internal void AddRow(Row<TRow> row) => _rows.Add(row);
