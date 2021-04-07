@@ -4,11 +4,11 @@
 @using vNext.BlazorComponents.Demo.Data;
 <h1>Ordering</h1>
 
-@if (_sortDefinitions.Count > 0)
+@if (_sortingModel.Sortings.Count > 0)
 {
     <div>
         Sort By:
-        @foreach (var sort in _sortDefinitions)
+        @foreach (var sort in _sortingModel.Sortings)
         {
             <span class="badge badge-info mr-1">
                 @sort.Field
@@ -73,10 +73,7 @@
     SimpleGrid<Product> _grid;
 
 
-    List<Sort<Product>> _sortDefinitions = new List<Sort<Product>>
-    {
-        new Sort<Product>(nameof(Product.Name))
-    };
+    SortingModel _sortingModel = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -90,7 +87,7 @@
     {
         if (column.Field == null) return null;
         var css = "sortable";
-        var sort = _sortDefinitions.FirstOrDefault(c => c.Field == column.Field);
+        var sort = _sortingModel.Sortings.FirstOrDefault(c => c.Field == column.Field);
         if (sort != null)
         {
             css += sort.Descending ? " sort-desc" : " sort-asc";
@@ -102,9 +99,9 @@
     {
         _products = await ProductsService.GetProducts();
         var query = _products.AsQueryable();
-        for (int i = 0; i < _sortDefinitions.Count; i++)
+        for (int i = 0; i < _sortingModel.Sortings.Count; i++)
         {
-            var sort = _sortDefinitions[i];
+            var sort = _sortingModel.Sortings[i];
             var lambda = FieldUtils.CreatePropertyLambda<Product>(sort.Field);
             query = query.OrderBy(lambda, sort.Descending, i > 0);
         }
@@ -120,20 +117,7 @@
         {
             return;
         }
-        Sort<Product> existing = _sortDefinitions.Find(s => s.Field == args.Header.ColumnDef.Field);
-        Sort<Product> sort = new(args.Header.ColumnDef.Field, existing == default ? false : !existing.Descending);
-        if (!args.EventArgs.ShiftKey)
-        {
-            _sortDefinitions.Clear();
-        }
-        if (existing == default || _sortDefinitions.Count == 0)
-        {
-            _sortDefinitions.Add(sort);
-        }
-        else
-        {
-            _sortDefinitions[_sortDefinitions.IndexOf(existing)] = sort;
-        }
+        _sortingModel.AddSorting(args.ColumnDef.Field, args.EventArgs.ShiftKey);
         await Reload();
     }
 
@@ -162,9 +146,5 @@
                 }
             }
         }
-    }
-
-    record Sort<T>(string Field, bool Descending = false)
-    {
     }
 }
