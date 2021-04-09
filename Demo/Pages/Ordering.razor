@@ -4,11 +4,11 @@
 @using vNext.BlazorComponents.Demo.Data;
 <h1>Ordering</h1>
 
-@if (_sortingModel.Sortings.Count > 0)
+@if (_sortingModel.Descriptors.Count > 0)
 {
     <div>
         Sort By:
-        @foreach (var sort in _sortingModel.Sortings)
+        @foreach (var sort in _sortingModel.Descriptors)
         {
             <span class="badge badge-info mr-1">
                 @sort.Field
@@ -87,7 +87,7 @@
     {
         if (column.Field == null) return null;
         var css = "sortable";
-        var sort = _sortingModel.Sortings.FirstOrDefault(c => c.Field == column.Field);
+        var sort = _sortingModel.Descriptors.FirstOrDefault(c => c.Field == column.Field);
         if (sort != null)
         {
             css += sort.Descending ? " sort-desc" : " sort-asc";
@@ -99,9 +99,9 @@
     {
         _products = await ProductsService.GetProducts();
         var query = _products.AsQueryable();
-        for (int i = 0; i < _sortingModel.Sortings.Count; i++)
+        for (int i = 0; i < _sortingModel.Descriptors.Count; i++)
         {
-            var sort = _sortingModel.Sortings[i];
+            var sort = _sortingModel.Descriptors[i];
             var lambda = FieldUtils.CreatePropertyLambda<Product>(sort.Field);
             query = query.OrderBy(lambda, sort.Descending, i > 0);
         }

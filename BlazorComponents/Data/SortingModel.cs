@@ -23,7 +23,7 @@ namespace vNext.BlazorComponents.Data
             SortDescriptor? existingDescriptor = Descriptors.FirstOrDefault(s => s.Field == field);
             SortDescriptor newDescriptor = new(
                 Field: field,
-                Descending: !(existingDescriptor?.Descending == true));
+                Descending: existingDescriptor?.Descending == false);
 
             if (!multiple)
             {
