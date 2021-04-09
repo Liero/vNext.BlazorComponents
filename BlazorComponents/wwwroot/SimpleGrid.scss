@@ -18,6 +18,7 @@ $table-border-color: #f3f2f1 !default;
 
 .sg-container {
     display: flex;
+    overflow: hidden;
 }
 
 .sg-header, .sg-row {

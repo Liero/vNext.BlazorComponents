@@ -13,6 +13,7 @@ namespace vNext.BlazorComponents.Grid
         private bool _shouldRender = true;
         private string? _gridTemplateColumns;
         private ElementReference? _elementRef;
+        private Virtualize<RowWrapper>? _virtualizeRef;
         private DotNetObjectReference<SimpleGrid<TRow>>? _dotNetRef;
         private IJSObjectReference? _jsApi;
         private HashSet<Row<TRow>> _rows = new();
@@ -20,7 +21,7 @@ namespace vNext.BlazorComponents.Grid
         private ICollection<RowWrapper>? _wrappedItems;
         private ICollection<TRow> _selectedItems = Array.Empty<TRow>();
         #region parameters
-
+        
         [Inject] protected IJSRuntime? JS { get; set; }
 
         [Parameter]
@@ -34,14 +35,12 @@ namespace vNext.BlazorComponents.Grid
             }
         }
 
-        [Parameter] public EventCallback<ReadEventArgs<TRow>> OnRead { get; set; }
         [Parameter] public Func<Row<TRow>, string?>? RowClassSelector { get; set; }
 
         [Parameter] public int OverscanCount { get; set; } = 3;
 
         [Parameter] public List<ColumnDef<TRow>> ColumnDefinitions { get; set; } = new List<ColumnDef<TRow>>();
 
-        public ColumnDef<TRow>?  DefaultColumn { get; set; }
 
         [Parameter] public int FrozenColumns { get; set; } = 0;
 
@@ -50,6 +49,7 @@ namespace vNext.BlazorComponents.Grid
 
         [Parameter] public RenderFragment ChildContent { get; set; } = default(RenderFragment)!;
 
+        [Parameter] public EventCallback<ReadEventArgs<TRow>> OnRead { get; set; }
         [Parameter] public EventCallback<RowMouseEventArgs<TRow>> OnRowClick { get; set; }
         [Parameter] public EventCallback<RowMouseEventArgs<TRow>> OnRowContextMenu { get; set; }
         [Parameter] public EventCallback<HeaderMouseEventArgs<TRow>> OnHeaderClick { get; set; }
@@ -74,16 +74,46 @@ namespace vNext.BlazorComponents.Grid
                 }
             }        
         }
+
+        public ColumnDef<TRow>?  DefaultColumn { get; internal set; }
+
         #endregion
         internal List<Header<TRow>> Headers { get; } = new List<Header<TRow>>();
 
         public string GridTemplateColumns =>
             _gridTemplateColumns ?? (_gridTemplateColumns = string.Join(' ', ColumnDefinitions.Select(c => c.GridTemplateWidth)));
 
+        /// <summary>
+        /// Returns <see cref="Row{TRow}"/> instances rendered by Virtualize component.
+        /// </summary>
+        /// <remarks>Not all items in <see cref="Items"/> have corresponding <see cref="Row{TRow}"/> due to virtualization</remarks>
+        public IEnumerable<Row<TRow>> GetVisibleRows() => _rows.AsEnumerable();
+
         public void Refresh()
         {
             Invalidate();
             StateHasChanged();
+        }
+        public async Task ReloadAsync()
+        {
+            if (_virtualizeRef != null)
+            {
+                await _virtualizeRef.RefreshDataAsync();
+            }
+        }
+
+        public async Task<Cell<TRow>?> GetCellFromPoint(double clientX, double clientY)
+        {
+            var result = await JS!.InvokeAsync<int[]>("vNext.SimpleGrid.getCellFromPoint", new { clientX, clientY });
+            int colIndex = result[0];
+            int rowIndex = result[1];
+            if (colIndex < 0)
+            {
+                return null;
+            }
+            var colDef = ColumnDefinitions[colIndex];
+            var row = _rows.FirstOrDefault(r => r.Index == rowIndex);
+            return row?.FindCell(colDef);
         }
 
         public IEnumerable<Header<TRow>> GetHeaders() => Headers;
@@ -150,7 +180,7 @@ namespace vNext.BlazorComponents.Grid
             _dotNetRef = DotNetObjectReference.Create(this);
             if (firstRender)
             {
-                _jsApi = await JS!.InvokeAsync<IJSObjectReference>("vNext.initGrid", _elementRef, _dotNetRef);
+                _jsApi = await JS!.InvokeAsync<IJSObjectReference>("vNext.SimpleGrid.init", _elementRef, _dotNetRef);
             }
             if (_rows.Count > 0)
             {
@@ -160,10 +190,13 @@ namespace vNext.BlazorComponents.Grid
 
         protected override bool ShouldRender() => _shouldRender;
 
+        public int? TotalCount { get; set; }
+
         protected virtual async ValueTask<ItemsProviderResult<RowWrapper>> ProvideItems(ItemsProviderRequest request)
         {
             var args = new ReadEventArgs<TRow>(request.StartIndex, request.Count);
             await OnRead.InvokeAsync(args);
+            TotalCount = args.Total;
             var refs = args.Items.Select((item, index) => new RowWrapper(request.StartIndex + index, item));
             return new ItemsProviderResult<RowWrapper>(refs, args.Total.GetValueOrDefault());
         }
