@@ -20,8 +20,9 @@ namespace vNext.BlazorComponents.Grid
         private ICollection<TRow>? _items;
         private ICollection<RowWrapper>? _wrappedItems;
         private ICollection<TRow> _selectedItems = Array.Empty<TRow>();
+        private int? _providedTotalCount;
         #region parameters
-        
+
         [Inject] protected IJSRuntime? JS { get; set; }
 
         [Parameter]
@@ -60,22 +61,22 @@ namespace vNext.BlazorComponents.Grid
         [Parameter]
         public ICollection<TRow> SelectedItems
         {
-            get => _selectedItems; 
+            get => _selectedItems;
             set
             {
                 if (_selectedItems != value)
                 {
                     var affectedItems = _selectedItems.Concat(value).Distinct();
                     _selectedItems = value;
-                    foreach(var item in affectedItems)
+                    foreach (var item in affectedItems)
                     {
                         FindRow(item)?.Refresh(false);
                     }
                 }
-            }        
+            }
         }
 
-        public ColumnDef<TRow>?  DefaultColumn { get; internal set; }
+        public ColumnDef<TRow>? DefaultColumn { get; internal set; }
 
         #endregion
         internal List<Header<TRow>> Headers { get; } = new List<Header<TRow>>();
@@ -190,13 +191,13 @@ namespace vNext.BlazorComponents.Grid
 
         protected override bool ShouldRender() => _shouldRender;
 
-        public int? TotalCount { get; set; }
+        public int? TotalCount { get => Items?.Count ?? _providedTotalCount; }
 
         protected virtual async ValueTask<ItemsProviderResult<RowWrapper>> ProvideItems(ItemsProviderRequest request)
         {
             var args = new ReadEventArgs<TRow>(request.StartIndex, request.Count);
             await OnRead.InvokeAsync(args);
-            TotalCount = args.Total;
+            _providedTotalCount = args.Total;
             var refs = args.Items.Select((item, index) => new RowWrapper(request.StartIndex + index, item));
             return new ItemsProviderResult<RowWrapper>(refs, args.Total.GetValueOrDefault());
         }

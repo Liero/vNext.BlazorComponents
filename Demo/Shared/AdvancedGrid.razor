@@ -137,7 +137,7 @@
             IEnumerable<TRow> itemsToSelect;
             if (CurrentView != null)
             {
-                itemsToSelect = CurrentView.Skip(rangeArgs.From).Take(rangeArgs.To);
+                itemsToSelect = CurrentView.Skip(rangeArgs.From).Take(rangeArgs.Count);
             }
             else
             {
@@ -185,7 +185,12 @@
 
     public Row<TRow> FindRow(TRow row) => _simpleGrid?.FindRow(row);
 
-    public void Refresh() => _simpleGrid?.Refresh();
+    public void Refresh()
+    {
+        _currentView = null;
+        _simpleGrid?.Refresh();
+    }
+
     public async Task ReloadAsync()
     {
         _currentView = null;

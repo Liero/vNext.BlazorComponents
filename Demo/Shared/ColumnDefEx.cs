@@ -15,9 +15,6 @@ namespace vNext.BlazorComponents.Demo.Shared
         public Func<TRow, object> ValueGetter { get; set; }
 
         [Parameter]
-        public Action<TRow, object> ValueSetter { get; set; }
-
-        [Parameter]
         public LambdaExpression SortBy { get; set; }
 
         protected override void OnInitialized()
@@ -32,11 +29,6 @@ namespace vNext.BlazorComponents.Demo.Shared
                     var valueGetter = propertyLambda.Compile();
                     ValueGetter = rowData => valueGetter.DynamicInvoke(rowData);
                 }
-                if (ValueSetter == null)
-                {
-                    var valueSetter = FieldUtils.CreateAssignLambda<TRow>(Field).Compile();
-                    ValueSetter = (rowData, value) => valueSetter.DynamicInvoke(rowData, value);
-                }
                 if (SortBy == null)
                 {
                     SortBy = propertyLambda;
@@ -49,7 +41,6 @@ namespace vNext.BlazorComponents.Demo.Shared
                     };
                 }
             }
-
         }
     }
 }
