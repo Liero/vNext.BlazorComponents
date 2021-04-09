@@ -32,9 +32,10 @@ namespace vNext.BlazorComponents.Data
         [Required]
         public string? SelectedOperator { get; set; }
         public string[] AvailableOperators { get; set; } = Array.Empty<string>();
-        public ObservableCollection<IFilterDescriptor> FilterDescriptors { get; } = new ObservableCollection<IFilterDescriptor>();
+        public ObservableCollection<IFilterDescriptor> Descriptors { get; } = new ObservableCollection<IFilterDescriptor>();
 
-        public virtual bool CanConvert(string? valueAsString, out string errorMessage)
+
+        public virtual bool CanConvert(string valueAsString, out string errorMessage)
         {
             try
             {
@@ -65,7 +66,7 @@ namespace vNext.BlazorComponents.Data
             yield return ">=";
         }
 
-        public void AddFilter()
+        public virtual void AddFilter()
         {
             if (string.IsNullOrEmpty(SelectedField) || string.IsNullOrEmpty(SelectedOperator))
             {
@@ -75,13 +76,19 @@ namespace vNext.BlazorComponents.Data
             {
                 return;
             }
-            FilterDescriptors.Add(new FilterDescriptor(SelectedField, SelectedOperator, GetValue()));
+            Descriptors.Add(CreateDescriptor());
+        }
+
+        public virtual IFilterDescriptor CreateDescriptor()
+        {
+            return new FilterDescriptor(SelectedField!, SelectedOperator!, GetValue());
         }
     }
 
     public class FilteringModel<TItem> : FilterigModelBase
     {
         static readonly string[] StringOnlyOperators = new[] { "contains", "startswith" };
+        static readonly string[] CompareOperators = new[] { "<", ">", "<=", ">=" };
 
         public Type? SelectedFieldClrType { get; set; }
         
@@ -93,19 +100,35 @@ namespace vNext.BlazorComponents.Data
                 if (!string.IsNullOrEmpty(value))
                 {
                     var propertyLambda = FieldUtils.CreatePropertyLambda(typeof(TItem), value);
-                    SelectedFieldClrType = FieldUtils.GetMemberType(propertyLambda.Body);
+                    SelectedFieldClrType = FieldUtils.GetMemberType(propertyLambda.Body); 
                 }
                 base.SelectedField = value;
+                if (SelectedOperator == null || !AvailableOperators.Contains(SelectedOperator))
+                {
+                    if (value != null)
+                    {
+                        SelectedOperator = GetDefaultOperator(value);
+                    }
+                }
             }
         }
 
         public override IEnumerable<string> GetOperators(string field)
         {
-            if (SelectedFieldClrType?.IsAssignableFrom(typeof(string)) != true)
+            var allOperators = base.GetOperators(field);
+            if (SelectedFieldClrType?.IsAssignableFrom(typeof(string)) == true)
             {
-                return base.GetOperators(field).Except(StringOnlyOperators);
+                return allOperators.Except(CompareOperators);
             }
-            return base.GetOperators(field);
+            else
+            {
+                return allOperators.Except(StringOnlyOperators);
+            }
+        }
+
+        public virtual string GetDefaultOperator(string field)
+        {
+            return SelectedFieldClrType == typeof(string) ? "startswith" : "==";
         }
 
         protected override object? GetValue(string valueAsString)
@@ -119,7 +142,7 @@ namespace vNext.BlazorComponents.Data
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {
             var filteringModel = ((FilterigModelBase)validationContext.ObjectInstance);
-            if (!filteringModel.CanConvert((string?)value, out string errorMessage))
+            if (!filteringModel.CanConvert((string)value!, out string errorMessage))
             {
                 return new ValidationResult(errorMessage, new[] { validationContext.MemberName! });
             }

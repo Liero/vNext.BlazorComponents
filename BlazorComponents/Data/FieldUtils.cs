@@ -47,28 +47,35 @@ namespace vNext.BlazorComponents.Data
             => (Expression<Func<TItem, bool>>)CreatePredicateLambda(typeof(TItem), propertyPath, @operator, value);
         public static LambdaExpression CreatePredicateLambda(Type sourceType, string propertyPath, string @operator, object? value)
         {
+            return CreatePredicateLambda(sourceType, propertyPath, propertyExp =>
+                @operator switch
+                {
+                    "==" or "equals" => Expression.Equal(propertyExp, Expression.Constant(value)),
+                    "!=" or "<>" or "notequals" => Expression.NotEqual(propertyExp, Expression.Constant(value)),
+                    "<" => Expression.LessThan(propertyExp, Expression.Constant(value)),
+                    "<=" => Expression.LessThanOrEqual(propertyExp, Expression.Constant(value)),
+                    ">" => Expression.GreaterThan(propertyExp, Expression.Constant(value)),
+                    ">=" => Expression.GreaterThanOrEqual(propertyExp, Expression.Constant(value)),
+                    "startswith" => Expression.Call(
+                        propertyExp,
+                        typeof(string).GetMethod(nameof(string.StartsWith), new Type[] { typeof(string) })!,
+                        Expression.Constant(value ?? "")),
+                    "contains" => Expression.Call(
+                        propertyExp,
+                        typeof(string).GetMethod(nameof(string.Contains), new Type[] { typeof(string) })!,
+                        Expression.Constant(value ?? "")),
+                    _ => throw new ArgumentOutOfRangeException($"Operator '{@operator}' not supported", nameof(@operator))
+                });
+        }
+
+        public static Expression<Func<TItem, bool>> CreatePredicateLambda<TItem>(string propertyPath, Func<Expression, Expression> predicateBody)
+            => (Expression<Func<TItem, bool>>)CreatePredicateLambda(typeof(TItem), propertyPath, predicateBody);
+        public static LambdaExpression CreatePredicateLambda(Type sourceType, string propertyPath, Func<Expression, Expression> predicateBody)
+        {
             var itemParam = Expression.Parameter(sourceType, "item");
             var propertyExp = FieldUtils.ParsePropertyExpression(itemParam, propertyPath);
-            var valueExpr = Expression.Constant(value);
-            Expression predicate = @operator switch
-            {
-                "!=" or "<>" => Expression.NotEqual(propertyExp, valueExpr),
-                "<" => Expression.LessThan(propertyExp, valueExpr),
-                "<=" => Expression.LessThanOrEqual(propertyExp, valueExpr),
-                ">" => Expression.GreaterThan(propertyExp, valueExpr),
-                ">=" => Expression.GreaterThanOrEqual(propertyExp, valueExpr),
-                "startswith" => Expression.Call(
-                    propertyExp,
-                    typeof(string).GetMethod(nameof(string.StartsWith), new Type[] { typeof(string) })!,
-                    Expression.Constant(value)),
-                "contains" => Expression.Call(
-                    propertyExp,
-                    typeof(string).GetMethod(nameof(string.Contains), new Type[] { typeof(string) })!,
-                    Expression.Constant(value)),
-                _ => throw new ArgumentOutOfRangeException($"Operator '{@operator}' not supported", nameof(@operator))
-            };
-
-            return Expression.Lambda(predicate, itemParam);
+            var predicateBodyInstance = predicateBody(propertyExp);
+            return Expression.Lambda(predicateBodyInstance, itemParam);
         }
 
         public static IOrderedQueryable<TSource> OrderBy<TSource>(this IQueryable<TSource> query, LambdaExpression expression, bool desc = false, bool thenBy = false)
@@ -83,15 +90,6 @@ namespace vNext.BlazorComponents.Data
         {
             return OrderBy(query, expression, desc, true);
         }
-
-        public static IQueryable<TSource> Where<TSource>(this IQueryable<TSource> query, LambdaExpression expression)
-        {
-            string methodName = nameof(Queryable.Where);
-            var method = typeof(Queryable).GetMethods(BindingFlags.Public | BindingFlags.Static).First(m => m.Name == methodName && m.GetParameters().Length == 2);
-            method = method.MakeGenericMethod(typeof(TSource));
-            return (IQueryable<TSource>)method.Invoke(null, new object[] { query, expression })!;
-        }
-
 
         public static Type GetMemberType(this Expression expression)
         {
