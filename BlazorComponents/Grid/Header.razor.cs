@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,23 +28,55 @@ namespace vNext.BlazorComponents.Grid
             Grid?.Headers.Add(this);
         }
 
-        private string ResolveCssClass()
+        protected virtual string ResolveCssClass()
         {
+            var defaultColumn = Grid?.DefaultColumn;
+
             string result = "sg-cell sg-header-cell ";
             if (ColumnDef.IsFrozen)
             {
                 result += "sg-cell-frozen ";
             }
+      
             if (ColumnDef.HeaderClass != null)
             {
                 result += ColumnDef.HeaderClass;
             }
-            if (ColumnDef.HeaderClassSelector != null)
+            else if (defaultColumn?.HeaderClass != null)
+            {
+                result += defaultColumn.HeaderClass;
+            }
+
+            if (defaultColumn?.HeaderClassSelector != null)
+            {
+                result += " " + defaultColumn.HeaderClassSelector(ColumnDef);
+            }
+            else if (ColumnDef.HeaderClassSelector != null)
             {
                 result += " " + ColumnDef.HeaderClassSelector(ColumnDef);
             }
             return result;
         }
+
+        public string? Text => ColumnDef.Header ?? ColumnDef.Field;
+
+        protected virtual async Task OnHeaderClick(MouseEventArgs evt)
+        {
+            if (Grid != null) 
+            {
+                await Grid.OnHeaderClick.InvokeAsync(new HeaderMouseEventArgs<TRow>(this, evt));
+            }
+        }
+
+
+        private readonly static RenderFragment<Header<TRow>> DefaultTemplate = new RenderFragment<Header<TRow>>(args => builder =>
+        {
+            builder.AddContent(0, args.Text);
+        });
+
+        private RenderFragment<Header<TRow>> HeaderTemplate =>
+            ColumnDef.HeaderTemplate ?? Grid?.DefaultColumn?.HeaderTemplate ?? DefaultTemplate;
+
 
         void IDisposable.Dispose()
         {

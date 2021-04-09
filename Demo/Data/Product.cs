@@ -13,6 +13,9 @@ namespace vNext.BlazorComponents.Demo.Data
         [Required]
         public string Name { get; set; }
 
+        [Required]
+        public string Category { get; set; }
+
         [Range(0, 100)]
         public double Height { get; set; }
 

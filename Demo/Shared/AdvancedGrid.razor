@@ -1,0 +1,279 @@
+﻿@using System.Linq.Expressions
+@using BlazorContextMenu
+@using vNext.BlazorComponents.Grid
+@using vNext.BlazorComponents.Data
+@typeparam TRow
+@inject IBlazorContextMenuService ContextMenuService
+
+<ContextMenu Id="CellMenu">
+    <Item OnClick="FilteringModel.Descriptors.Clear">Clear filters</Item>
+    <Item OnClick="args => FilterByCell(((Cell<TRow>)args.Data).Data, ((Cell<TRow>)args.Data).ColumnDef)">Filter to this</Item>
+    <Item OnClick="@(args => FilterByCell(((Cell<TRow>)args.Data).Data, ((Cell<TRow>)args.Data).ColumnDef, "!="))">Filter except this</Item>
+</ContextMenu>
+
+<div @attributes="AdditionalAttributes"
+     class="d-flex flex-column overflow-hidden">
+    <div class="d-flex align-items-center">
+        <Container @ref="_filterArea">
+            @foreach (FilterDescriptor filter in FilteringModel.Descriptors)
+            {
+                <span class="btn-group mr-1">
+                    <span class="btn btn-info btn-sm"
+                          data-toggle="popper" data-target="#filtermenu"
+                          @onclick="_ => FilteringModel.StartEdit(filter)"
+                          @onclick:stopPropagation="false">
+                        @GetHeaderText(filter.Field)
+                        @filter.Operator
+                        @filter.Value
+                    </span>
+                    <span class="btn btn-info btn-sm" @onclick="_ => FilteringModel.Descriptors.Remove(filter)">&times;</span>
+                </span>
+            }
+
+
+            <span class="btn btn-info btn-sm rounded" data-toggle="popper" data-target="#filtermenu"
+                  @onclick="_ => FilteringModel.StartEdit(null)"
+                  @onclick:stopPropagation="false"
+                  @onclick:preventDefault="false">
+                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" class="bi" viewBox="0 0 16 16">
+                    <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2h-11z" />
+                </svg>
+                Add filter
+            </span>
+
+            <div id="filtermenu" class="popover fade d-none" role="tooltip">
+                <div class="arrow" x-arrow></div>
+                <EditForm Model="FilteringModel"
+                          class="popover-body"
+                          Context="FilteringEditContext"
+                          OnValidSubmit="FilteringModel.EndEdit">
+                    <DataAnnotationsValidator />
+
+                    @if (FilteringModel.CurrentDescriptor != null)
+                    {
+                        <h3>@(GetHeaderText(FilteringModel.CurrentDescriptor.Field))</h3>
+                    }
+                    else
+                    {
+                        <h3>Add filter</h3>
+                        <div class="form-group">
+                            <label>Field</label>
+                            <InputSelect @bind-Value="FilteringModel.SelectedField" class="form-control" placeholder="select field">
+                                <option hidden class="text-muted">Field</option>
+                                @if (_simpleGrid != null)
+                                    {
+                                    @foreach (var header in _simpleGrid.GetHeaders().Where(h => h.ColumnDef.Field != null))
+                                        {
+                                        <option value="@header.ColumnDef.Field">@header.Text</option>
+                                        }
+                                    }
+                            </InputSelect>
+                        </div>
+                    }
+
+                    <div class="form-group">
+                        <label>Operator</label>
+                        <InputSelect @bind-Value="FilteringModel.SelectedOperator" class="form-control">
+                            <option hidden class="text-muted">Operator</option>
+                            @foreach (var operator_ in FilteringModel.AvailableOperators)
+                            {
+                                <option value="@operator_">@operator_</option>
+                            }
+                        </InputSelect>
+                    </div>
+                    <div class="form-group">
+                        <label>Value</label>
+                        <InputText @bind-Value="FilteringModel.ValueAsString" class="form-control" placeholder="value"></InputText>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary" data-toggle="popper" data-target="#filtermenu">Apply</button>
+                        <button type="button" class="btn btn-outline-primary" data-toggle="popper" data-target="#filtermenu">Cancel</button>
+                    </div>
+                </EditForm>
+            </div>
+
+        </Container>
+    </div>
+
+    <SimpleGrid TRow="TRow"
+                Items="CurrentView"
+                OnRead="OnRead"
+                OverscanCount="OverscanCount"
+                FrozenColumns="FrozenColumns"
+                CssClass="@CssClass"
+                SelectedItems="SelectionModel.SelectedItems"
+                OnRowContextMenu="OnRowContextMenuHandler"
+                OnRowClick="OnRowClickHandler"
+                OnHeaderClick="HeaderClicked"
+                @ref="_simpleGrid">
+        <ColumnDef IsDefault="true" TRow="TRow" HeaderClassSelector="HeaderClassSelector" />
+        @ChildContent
+    </SimpleGrid>
+
+    <div>
+        Items Counts:
+        @if (Items != null && CurrentView.Count != Items.Count)
+        {
+            <text>@CurrentView?.Count / @Items?.Count</text>
+        }
+        else
+        {
+            <text>@(_simpleGrid?.TotalCount)</text>
+        }
+    </div>
+</div>
+
+
+@code 
+{
+    List<TRow> _currentView;
+    SimpleGrid<TRow> _simpleGrid;
+    Container _filterArea;
+
+    public AdvancedGrid()
+    {
+        SelectionModel.GetRange = rangeArgs =>
+        {
+            IEnumerable<TRow> itemsToSelect;
+            if (CurrentView != null)
+            {
+                itemsToSelect = CurrentView.Skip(rangeArgs.From).Take(rangeArgs.To);
+            }
+            else
+            {
+                itemsToSelect = _simpleGrid.GetVisibleRows()
+                    .Where(row => row.Index >= rangeArgs.From && row.Index <= rangeArgs.To)
+                    .OrderBy(row => row.Index)
+                    .Select(row => row.Data);
+            }
+            return Task.FromResult(itemsToSelect);
+        };
+    }
+
+    [Parameter] public ICollection<TRow> Items { get; set; }
+    [Parameter] public int OverscanCount { get; set; } = 3;
+    [Parameter] public int FrozenColumns { get; set; } = 0;
+    [Parameter] public string CssClass { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; } = default(RenderFragment)!;
+
+    [Parameter] public AdvancedFilteringModel<TRow> FilteringModel { get; set; } = new();
+    [Parameter] public SelectionModel<TRow> SelectionModel { get; set; } = new();
+    [Parameter] public SortingModel SortingModel { get; set; } = new();
+
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> AdditionalAttributes { get; set; }
+
+    [Parameter] public EventCallback<ReadEventArgs<TRow>> OnRead { get; set; }
+    [Parameter] public EventCallback<RowMouseEventArgs<TRow>> OnRowClick { get; set; }
+    [Parameter] public EventCallback<CreatingPredicateEventArgs<TRow>> OnCreatingFilterPredicate { get; set; }
+
+
+    protected List<TRow> CurrentView { get => _currentView ?? (_currentView = CalculateView()); }
+
+
+    [Inject] IJSRuntime Js { get; set; }
+
+    public IEnumerable<TRow> GetCurrentData() => CurrentView ?? _simpleGrid.GetVisibleRows().OrderBy(row => row.Index).Select(row => row.Data);
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        if (firstRender)
+        {
+            _filterArea?.Refresh(); // refresh menu after columndefinitions has been rendered
+        }
+    }
+
+    public Row<TRow> FindRow(TRow row) => _simpleGrid?.FindRow(row);
+
+    public void Refresh() => _simpleGrid?.Refresh();
+    public async Task ReloadAsync()
+    {
+        _currentView = null;
+        if (_simpleGrid != null)
+        {
+            await _simpleGrid.ReloadAsync();
+        }
+    }
+
+    public void FilterByCell(TRow data, ColumnDef<TRow> columnDef, string @operator = "==")
+    {
+        if (columnDef is ColumnDefEx<TRow> ex)
+        {
+            var cellValue = ex.ValueGetter(data);
+            FilteringModel.Descriptors.Add(new FilterDescriptor(columnDef.Field, @operator, cellValue));
+        }
+    }
+
+    public void ShowCustomFilterUI(ColumnDef<TRow> columnDef)
+    {
+        FilteringModel.SelectedField = columnDef.Field;
+    }
+
+    void HeaderClicked(HeaderMouseEventArgs<TRow> args)
+    {
+        if (args.ColumnDef.Field == null)
+        {
+            return;
+        }
+        SortingModel.AddSorting(args.ColumnDef.Field, args.EventArgs.ShiftKey);
+    }
+
+
+    async Task OnRowClickHandler(RowMouseEventArgs<TRow> args)
+    {
+        SelectionModel.Select(args.Data, args.Index, args.EventArgs.CtrlKey, args.EventArgs.ShiftKey).GetAwaiter().GetResult();
+        await OnRowClick.InvokeAsync(args);
+    }
+
+    async Task OnRowContextMenuHandler(RowMouseEventArgs<TRow> args)
+    {
+        var cell = await _simpleGrid.GetCellFromPoint(args.EventArgs.ClientX, args.EventArgs.ClientY);
+        if (cell.ColumnDef.Field != null)
+        {
+            await ContextMenuService.ShowMenu("CellMenu", (int)args.EventArgs.ClientX, (int)args.EventArgs.ClientY, cell);
+        }
+    }
+
+    Expression<Func<TRow, bool>> CreatePredicate(IFilterDescriptor descriptor)
+    {
+        var args = new CreatingPredicateEventArgs<TRow>(descriptor);
+        OnCreatingFilterPredicate.InvokeAsync(args).GetAwaiter().GetResult();
+        return args.Predicate ?? descriptor.CreatePredicate<TRow>();
+    }
+
+    List<TRow> CalculateView()
+    {
+        if (Items == null) return null;
+        var query = Items.AsQueryable();
+        foreach (var filter in FilteringModel.Descriptors)
+        {
+            var predicate = CreatePredicate(filter);
+            query = query.Where(predicate);
+        }
+        for (int i = 0; i < SortingModel.Descriptors.Count; i++)
+        {
+            var sort = SortingModel.Descriptors[i];
+            var lambda = FieldUtils.CreatePropertyLambda<TRow>(sort.Field);
+            query = query.OrderBy(lambda, sort.Descending, i > 0);
+        }
+        return query.ToList();
+    }
+
+    string HeaderClassSelector(ColumnDef<TRow> column)
+    {
+        if (column.Field == null) return null;
+        var css = "sortable";
+        var sort = SortingModel.Descriptors.FirstOrDefault(c => c.Field == column.Field);
+        if (sort != null)
+        {
+            css += sort.Descending ? " sort-desc" : " sort-asc";
+        }
+        return css;
+    }
+
+    private string GetHeaderText(string field)
+    {
+        return _simpleGrid?.GetHeaders().FirstOrDefault(h => h.ColumnDef.Field != field)?.Text
+            ?? field;
+    }
+}

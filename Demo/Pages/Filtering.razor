@@ -1,0 +1,152 @@
+﻿@page "/filtering"
+@using vNext.BlazorComponents.Grid
+@using vNext.BlazorComponents.Data
+@using vNext.BlazorComponents.Demo.Data
+@using BlazorContextMenu
+@inject IBlazorContextMenuService ContextMenuService
+<h3>Filtering</h3>
+<p>
+    Right click a cell to filter by cell value
+</p>
+<Container @ref="_filterMenu">
+    <EditForm Model="FilteringModel"
+              Context="FilteringEditContext"
+              OnValidSubmit="FilteringModel.AddFilter"
+              class="d-flex align-items-center mb-1">
+        <DataAnnotationsValidator />
+        <InputSelect @bind-Value="FilteringModel.SelectedField" class="form-control" placeholder="select field">
+            <option hidden class="text-muted">Field</option>
+            @if (_grid != null)
+            {
+                @foreach (var header in _grid.GetHeaders().Where(h => h.ColumnDef.Field != null))
+                {
+                    <option value="@header.ColumnDef.Field">@header.Text</option>
+                }
+            }
+        </InputSelect>
+        <InputSelect @bind-Value="FilteringModel.SelectedOperator" class="form-control">
+            <option hidden class="text-muted">Operator</option>
+            @foreach (var operator_ in FilteringModel.AvailableOperators)
+            {
+                <option value="@operator_">@operator_</option>
+            }
+        </InputSelect>
+        <InputText @bind-Value="FilteringModel.ValueAsString" class="form-control" placeholder="value"></InputText>
+        <button type="submit" class="btn btn-sm btn-outline-secondary">Add</button>
+    </EditForm>
+
+
+    @if (FilteringModel.Descriptors.Count > 0)
+    {
+        <div class="d-flex align-items-center">
+            Filters:
+            @foreach (FilterDescriptor filter in FilteringModel.Descriptors)
+            {
+                <span class="mr-1">
+                    <span class="badge badge-info">
+                        @filter.Field
+                        @filter.Operator
+                        @filter.Value
+                    </span><a class="badge badge-info" @onclick="_ => FilteringModel.Descriptors.Remove(filter)">
+                        &times;
+                    </a>
+                </span>
+            }
+            <button type="button" class="btn btn-sm btn-outline-info" @onclick="FilteringModel.Descriptors.Clear">Clear</button>
+        </div>
+    }
+</Container>
+
+<ContextMenu Id="CellMenu">
+    <Item OnClick="FilteringModel.Descriptors.Clear">Clear filters</Item>
+    <Item OnClick="args => FilterByCellValue((Cell<Product>)args.Data)">Filter to this</Item>
+    <Item OnClick="@(args => FilterByCellValue((Cell<Product>)args.Data, "!="))">Filter except this</Item>
+</ContextMenu>
+<SimpleGrid TRow="Product" Items="_filteredProducts" style="max-height: 500px;"
+            @ref="_grid" OnRowContextMenu="OnRowContextMenu">
+    <ColumnDef TRow="Product" IsDefault="true" Width="auto"></ColumnDef>
+    <ColumnDef TRow="Product" Field="Id">
+        @context.Id
+    </ColumnDef>
+    <ColumnDef TRow="Product" Field="Name">
+        @context.Name
+    </ColumnDef>
+    <ColumnDef TRow="Product" Field="Length">
+        @context.Length
+    </ColumnDef>
+    <ColumnDef TRow="Product" Field="Width">
+        @context.Width
+    </ColumnDef>
+    <ColumnDef TRow="Product" Field="Height">
+        @context.Height
+    </ColumnDef>
+    <ColumnDef TRow="Product" Field="Volume" CellClass="text-right" Width="min-content"
+               CellClassSelector="@(e => e.Data.Volume > 100 ? "bg-danger" : "bg-success")">
+        @(context.Volume.ToString("f3")) m<sup>3</sup>
+    </ColumnDef>
+</SimpleGrid>
+<div>
+    Count: @_filteredProducts?.Length of @_products?.Length
+</div>
+
+<button type="button" @onclick="Reload">Reload</button>
+
+@code
+{
+    [Inject] ProductsService ProductsService { get; set; }
+
+    Product[] _products;
+    Product[] _filteredProducts;
+    Container _filterMenu;
+    SimpleGrid<Product> _grid;
+
+    FilteringModel<Product> FilteringModel = new FilteringModel<Product>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        FilteringModel.Descriptors.CollectionChanged += (o, e) => ApplyFilters();
+        await Reload();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        if (firstRender)
+        {
+            _filterMenu.Refresh(); // refresh menu after columndefinitions has been rendered
+        }
+    }
+
+    private async Task Reload()
+    {
+        _products = await ProductsService.GetProducts();
+        ApplyFilters();
+    }
+
+
+    private void ApplyFilters()
+    {
+        var query = _products.AsQueryable();
+        foreach (var filter in FilteringModel.Descriptors)
+        {
+            var lambda = filter.CreatePredicate<Product>();
+            query = query.Where(lambda);
+        }
+        _filteredProducts = query.ToArray();
+    }
+
+    private async Task OnRowContextMenu(RowMouseEventArgs<Product> args)
+    {
+        var cell = await _grid.GetCellFromPoint(args.EventArgs.ClientX, args.EventArgs.ClientY);
+        if (cell.ColumnDef.Field != null)
+        {
+            await ContextMenuService.ShowMenu("CellMenu", (int)args.EventArgs.ClientX, (int)args.EventArgs.ClientY, cell);
+        }
+    }
+
+    private void FilterByCellValue(Cell<Product> cell, string @operator = "==")
+    {
+        object cellValue = FieldUtils.CreatePropertyLambda<Product>(cell.ColumnDef.Field).Compile().DynamicInvoke(cell.Data);
+        FilteringModel.Descriptors.Add(new FilterDescriptor(cell.ColumnDef.Field, @operator, cellValue));
+    }
+}

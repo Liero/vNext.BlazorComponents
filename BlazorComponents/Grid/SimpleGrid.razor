@@ -14,9 +14,10 @@
                     <Header ColumnDef="col" @key="col" />
                 }
             </div>
-            <Virtualize Items="_wrappedItems" 
+            <Virtualize @ref="_virtualizeRef"
+                        Items="_wrappedItems" 
                         ItemsProvider="@(_wrappedItems == null ? ProvideItems : null)"
-                        OverscanCount="OverscanCount"
+                        OverscanCount="OverscanCount"                        
                         Context="row">
                 <ItemContent>
                     <Row Data="row.Row" Index="row.Index" @key="row.Row" />

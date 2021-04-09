@@ -1,6 +1,7 @@
 ﻿@typeparam TRow
-<div class="@ResolveCssClass()" style="@ColumnDef.FrozenLeft" @key="ColumnDef">
-    @ColumnDef.Header
+<div class="@ResolveCssClass()" style="@ColumnDef.FrozenLeft" @key="ColumnDef"
+     @onclick="OnHeaderClick">
+    @HeaderTemplate(this)
 
     <div class="sg-header-cell-resize" />
 </div>

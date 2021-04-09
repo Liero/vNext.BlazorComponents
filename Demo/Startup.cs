@@ -27,6 +27,7 @@ namespace vNext.BlazorComponents.Demo
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
+            services.AddBlazorContextMenu();
             services.AddSingleton<ProductsService>();
             services.Configure<RequestLocalizationOptions>(options =>
             {

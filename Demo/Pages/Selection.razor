@@ -3,7 +3,14 @@
 @using vNext.BlazorComponents.Data;
 @using vNext.BlazorComponents.Demo.Data;
 
-<h1>Hello, world!</h1>
+<h1>Selection Demo</h1>
+<ul>
+    <li>click to select single row.</li>
+    <li>shift+click to select a row range</li>
+    <li>ctrl+click to toggle row selection</li>
+    <li>edit multiple selected rows at once</li>
+</ul>
+    
 <EditForm EditContext="_editContext" Context="model">
     <DataAnnotationsValidator />
 

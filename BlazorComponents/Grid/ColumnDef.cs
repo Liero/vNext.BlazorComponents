@@ -13,19 +13,23 @@ namespace vNext.BlazorComponents.Grid
 
         [CascadingParameter(Name = "Grid")] internal SimpleGrid<TRow>? Grid { get; set; }
 
+        [Parameter] public bool IsDefault { get; set; }
+        [Parameter] public string? Field { get; set; }
+
         [Parameter] public string? Header { get; set; }
+        [Parameter] public RenderFragment<Header<TRow>>? HeaderTemplate { get; set; }
         [Parameter] public string? HeaderClass { get; set; }
         [Parameter] public Func<ColumnDef<TRow>, string?>? HeaderClassSelector { get; set; }
 
         [Parameter] public RenderFragment<TRow>? ChildContent { get; set; }
 
-        [Parameter] public string Width { get; set; } = "min-content";
+        [Parameter] public string? Width { get; set; }
 
         [Parameter] public string? CellClass { get; set; }
 
         [Parameter] public Func<Cell<TRow>, string?>? CellClassSelector { get; set; }
 
-        public string GridTemplateWidth => ActualWidth.HasValue ? $"{ActualWidth}px" : Width;
+        public string GridTemplateWidth => ActualWidth.HasValue ? $"{ActualWidth}px" : Width ?? Grid?.DefaultColumn?.Width ?? "min-content";
 
         public bool IsFrozen { get; internal set; }
         public int Index { get; internal set; } = -1;

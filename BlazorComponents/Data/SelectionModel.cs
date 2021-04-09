@@ -8,16 +8,31 @@ namespace vNext.BlazorComponents.Data
 {
     public class SelectionModel<T>
     {
+        private IEqualityComparer<T> _equalityComparer;
+
         public SelectionModel(IEqualityComparer<T>? equalityComparer = null)
         {
-            EqualityComparer = equalityComparer ?? EqualityComparer<T>.Default;
-            SelectedItems = new HashSet<T>(EqualityComparer);
+            _equalityComparer = equalityComparer ?? EqualityComparer<T>.Default;
+            SelectedItems = new HashSet<T>(_equalityComparer);
         }
 
-        public HashSet<T> SelectedItems { get; set; }
+        public HashSet<T> SelectedItems { get; protected set; }
         public T? SelectedItem { get; set; }
         public int SelectedIndex { get; set; } = -1;
-        public IEqualityComparer<T> EqualityComparer { get; }
+
+        public IEqualityComparer<T> EqualityComparer
+        {
+            get => _equalityComparer;
+            set
+            {
+                _equalityComparer = value;
+                if (SelectedItems != null)
+                {
+                    SelectedItems = new HashSet<T>(SelectedItems, value);
+                }
+            }
+        }
+
         public Func<RangeArgs, Task<IEnumerable<T>>>? GetRange { get; set; }
 
         public async Task Select(T? item, int? index, bool toggle = false, bool range = false)
