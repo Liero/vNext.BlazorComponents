@@ -16,8 +16,15 @@ var vNext;
                     evt.stopPropagation();
                     this.startResize(evt);
                 }
-                if (target.matches('input') && evt.shiftKey) {
-                    target.focus();
+                if (evt.shiftKey) {
+                    if (target.matches('input')) {
+                        target.focus();
+                    }
+                    function cancelSelection(evt2) {
+                        evt2.preventDefault();
+                    }
+                    elementRef.addEventListener('selectstart', cancelSelection);
+                    setTimeout(() => elementRef.removeEventListener('selectstart', cancelSelection));
                 }
 
                 if (target.matches('.sg-header-cell') && evt.shiftKey) {
