@@ -6,14 +6,16 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Daniel Turan</Authors>
     <Company>vNext Software Consulting</Company>
-    <Version>0.4.0</Version>
+    <Version>0.4.5</Version>
     <PackageTags>Blazor DataGrid</PackageTags>
     <Description>High performace UI components for Blazor
  * SimpleGrid - virtualized datagrid with manual data operation, virtual and infinite scrolling
  * IconButton
  * InputSelectNullable - converts empty value to null
  * Container - just a container that does not produce any html, but allow to control rerendering of ChildContent</Description>
-    <PackageReleaseNotes>
+    <PackageReleaseNotes>#0.4.5
+default column
+
 #0.4
 Selection
 
