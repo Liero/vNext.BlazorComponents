@@ -23,13 +23,13 @@ namespace vNext.BlazorComponents.Grid
 
         [Parameter] public RenderFragment<TRow>? ChildContent { get; set; }
 
-        [Parameter] public string Width { get; set; } = "min-content";
+        [Parameter] public string? Width { get; set; }
 
         [Parameter] public string? CellClass { get; set; }
 
         [Parameter] public Func<Cell<TRow>, string?>? CellClassSelector { get; set; }
 
-        public string GridTemplateWidth => ActualWidth.HasValue ? $"{ActualWidth}px" : Width;
+        public string GridTemplateWidth => ActualWidth.HasValue ? $"{ActualWidth}px" : Width ?? Grid?.DefaultColumn?.Width ?? "min-content";
 
         public bool IsFrozen { get; internal set; }
         public int Index { get; internal set; } = -1;
