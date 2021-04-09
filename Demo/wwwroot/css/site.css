@@ -16,9 +16,6 @@ a, .btn-link {
 .content {
   padding-top: 1.1rem; }
 
-.valid.modified:not([type=checkbox]) {
-  outline: 1px solid #26b050; }
-
 .invalid {
   outline: 1px solid red; }
 
@@ -30,6 +27,16 @@ a, .btn-link {
   padding-left: 0;
   line-height: 1em;
   max-width: 100%; }
+
+.sortable {
+  cursor: pointer; }
+
+.sort-asc::after, .sort-desc::after {
+  transform: translateY(-0.125em); }
+  .sort-asc::after.sort-asc, .sort-desc::after.sort-asc {
+    content: ' \2191'; }
+  .sort-asc::after.sort-desc, .sort-desc::after.sort-desc {
+    content: ' \2191'; }
 
 #blazor-error-ui {
   background: lightyellow;
