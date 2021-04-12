@@ -61,12 +61,12 @@
                             <InputSelect @bind-Value="FilteringModel.SelectedField" class="form-control" placeholder="select field">
                                 <option hidden class="text-muted">Field</option>
                                 @if (_simpleGrid != null)
-                                    {
+                                {
                                     @foreach (var header in _simpleGrid.GetHeaders().Where(h => h.ColumnDef.Field != null))
-                                        {
+                                    {
                                         <option value="@header.ColumnDef.Field">@header.Text</option>
-                                        }
                                     }
+                                }
                             </InputSelect>
                         </div>
                     }
@@ -97,7 +97,7 @@
 
     <SimpleGrid TRow="TRow"
                 Items="CurrentView"
-                OnRead="OnRead"
+                OnRead="OnRead.HasDelegate ? OnReadHandler : default!"
                 OverscanCount="OverscanCount"
                 FrozenColumns="FrozenColumns"
                 CssClass="@CssClass"
@@ -112,13 +112,13 @@
 
     <div>
         Items Counts:
-        @if (Items != null && CurrentView.Count != Items.Count)
+        @if (CurrentView != null && CurrentView.Count != TotalCount)
         {
-            <text>@CurrentView?.Count / @Items?.Count</text>
+            <text>@CurrentView.Count / @TotalCount</text>
         }
         else
         {
-            <text>@(_simpleGrid?.TotalCount)</text>
+            <text>@(TotalCount)</text>
         }
     </div>
 </div>
@@ -129,6 +129,7 @@
     List<TRow> _currentView;
     SimpleGrid<TRow> _simpleGrid;
     Container _filterArea;
+    private int? _providedTotalCount;
 
     public AdvancedGrid()
     {
@@ -150,6 +151,8 @@
         };
     }
 
+    [Inject] IJSRuntime Js { get; set; }
+
     [Parameter] public ICollection<TRow> Items { get; set; }
     [Parameter] public int OverscanCount { get; set; } = 3;
     [Parameter] public int FrozenColumns { get; set; } = 0;
@@ -166,13 +169,11 @@
     [Parameter] public EventCallback<RowMouseEventArgs<TRow>> OnRowClick { get; set; }
     [Parameter] public EventCallback<CreatingPredicateEventArgs<TRow>> OnCreatingFilterPredicate { get; set; }
 
-
+    public int? TotalCount { get => Items?.Count ?? _providedTotalCount; }
+    public IEnumerable<TRow> GetCurrentData() => CurrentView ?? _simpleGrid.GetVisibleRows().OrderBy(row => row.Index).Select(row => row.Data);
     protected List<TRow> CurrentView { get => _currentView ?? (_currentView = CalculateView()); }
 
 
-    [Inject] IJSRuntime Js { get; set; }
-
-    public IEnumerable<TRow> GetCurrentData() => CurrentView ?? _simpleGrid.GetVisibleRows().OrderBy(row => row.Index).Select(row => row.Data);
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -214,6 +215,7 @@
         FilteringModel.SelectedField = columnDef.Field;
     }
 
+
     void HeaderClicked(HeaderMouseEventArgs<TRow> args)
     {
         if (args.ColumnDef.Field == null)
@@ -221,6 +223,12 @@
             return;
         }
         SortingModel.AddSorting(args.ColumnDef.Field, args.EventArgs.ShiftKey);
+    }
+
+    async Task OnReadHandler(ReadEventArgs<TRow> args)
+    {
+        await OnRead.InvokeAsync(args);
+        _providedTotalCount = args.Total;
     }
 
 
@@ -278,7 +286,7 @@
 
     private string GetHeaderText(string field)
     {
-        return _simpleGrid?.GetHeaders().FirstOrDefault(h => h.ColumnDef.Field != field)?.Text
+        return _simpleGrid?.GetHeaders().FirstOrDefault(h => h.ColumnDef.Field == field)?.Text
             ?? field;
     }
 }

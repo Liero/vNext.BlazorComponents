@@ -20,7 +20,6 @@ namespace vNext.BlazorComponents.Grid
         private ICollection<TRow>? _items;
         private ICollection<RowWrapper>? _wrappedItems;
         private ICollection<TRow> _selectedItems = Array.Empty<TRow>();
-        private int? _providedTotalCount;
         #region parameters
 
         [Inject] protected IJSRuntime? JS { get; set; }
@@ -30,9 +29,12 @@ namespace vNext.BlazorComponents.Grid
         {
             get => _items; set
             {
-                _items = value;
-                _wrappedItems = _items?.Select((item, i) => new RowWrapper(i, item)).ToList();
-                Invalidate();
+                if (_items != value)
+                {
+                    _items = value;
+                    _wrappedItems = _items?.Select((item, i) => new RowWrapper(i, item)).ToList();
+                    Invalidate();
+                }
             }
         }
 
@@ -68,10 +70,11 @@ namespace vNext.BlazorComponents.Grid
                 {
                     var affectedItems = _selectedItems.Concat(value).Distinct();
                     _selectedItems = value;
-                    foreach (var item in affectedItems)
+                    foreach (var item in affectedItems.Distinct())
                     {
                         FindRow(item)?.Refresh(false);
                     }
+                    Invalidate();
                 }
             }
         }
@@ -95,6 +98,10 @@ namespace vNext.BlazorComponents.Grid
             Invalidate();
             StateHasChanged();
         }
+
+        /// <summary>
+        /// triggers OnRead event.
+        /// </summary>
         public async Task ReloadAsync()
         {
             if (_virtualizeRef != null)
@@ -191,13 +198,12 @@ namespace vNext.BlazorComponents.Grid
 
         protected override bool ShouldRender() => _shouldRender;
 
-        public int? TotalCount { get => Items?.Count ?? _providedTotalCount; }
+
 
         protected virtual async ValueTask<ItemsProviderResult<RowWrapper>> ProvideItems(ItemsProviderRequest request)
         {
             var args = new ReadEventArgs<TRow>(request.StartIndex, request.Count);
             await OnRead.InvokeAsync(args);
-            _providedTotalCount = args.Total;
             var refs = args.Items.Select((item, index) => new RowWrapper(request.StartIndex + index, item));
             return new ItemsProviderResult<RowWrapper>(refs, args.Total.GetValueOrDefault());
         }
