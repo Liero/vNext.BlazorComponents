@@ -32,7 +32,6 @@ namespace vNext.BlazorComponents.Grid
                 if (_items != value)
                 {
                     _items = value;
-                    _wrappedItems = _items?.Select((item, i) => new RowWrapper(i, item)).ToList();
                     Invalidate();
                 }
             }
@@ -176,6 +175,7 @@ namespace vNext.BlazorComponents.Grid
         {
             _gridTemplateColumns = null;
             _shouldRender = true;
+            _wrappedItems = _items?.Select((item, i) => new RowWrapper(i, item)).ToList();
             foreach (var row in _rows)
             {
                 row.Refresh();
