@@ -31,12 +31,13 @@ a, .btn-link {
 .sortable {
   cursor: pointer; }
 
-.sort-asc::after, .sort-desc::after {
+.sort-asc::after {
+  content: ' \2191';
   transform: translateY(-0.125em); }
-  .sort-asc::after.sort-asc, .sort-desc::after.sort-asc {
-    content: ' \2191'; }
-  .sort-asc::after.sort-desc, .sort-desc::after.sort-desc {
-    content: ' \2191'; }
+
+.sort-desc::after {
+  content: ' \2193';
+  transform: translateY(-0.125em); }
 
 #blazor-error-ui {
   background: lightyellow;

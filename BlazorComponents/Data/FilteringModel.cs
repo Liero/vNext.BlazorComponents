@@ -133,7 +133,16 @@ namespace vNext.BlazorComponents.Data
 
         protected override object? GetValue(string valueAsString)
         {
-            return Convert.ChangeType(valueAsString, SelectedFieldClrType ?? typeof(string));
+            if (SelectedFieldClrType == null)
+            {
+                return null;
+            }
+            Type? fromNullable = Nullable.GetUnderlyingType(SelectedFieldClrType);
+            if (fromNullable != null && string.IsNullOrEmpty(valueAsString))
+            {
+                return null;
+            }
+            return Convert.ChangeType(valueAsString, fromNullable ?? SelectedFieldClrType);
         }
     }
 

@@ -50,12 +50,12 @@ namespace vNext.BlazorComponents.Data
             return CreatePredicateLambda(sourceType, propertyPath, propertyExp =>
                 @operator switch
                 {
-                    "==" or "equals" => Expression.Equal(propertyExp, Expression.Constant(value)),
-                    "!=" or "<>" or "notequals" => Expression.NotEqual(propertyExp, Expression.Constant(value)),
+                    "==" or "equals" => Expression.Equal(propertyExp, Expression.Constant(value, GetMemberType(propertyExp))),
+                    "!=" or "<>" or "notequals" => Expression.NotEqual(propertyExp, Expression.Constant(value, GetMemberType(propertyExp))),
                     "<" => Expression.LessThan(propertyExp, Expression.Constant(value)),
-                    "<=" => Expression.LessThanOrEqual(propertyExp, Expression.Constant(value)),
-                    ">" => Expression.GreaterThan(propertyExp, Expression.Constant(value)),
-                    ">=" => Expression.GreaterThanOrEqual(propertyExp, Expression.Constant(value)),
+                    "<=" => Expression.LessThanOrEqual(propertyExp, Expression.Constant(value, GetMemberType(propertyExp))),
+                    ">" => Expression.GreaterThan(propertyExp, Expression.Constant(value, GetMemberType(propertyExp))),
+                    ">=" => Expression.GreaterThanOrEqual(propertyExp, Expression.Constant(value, GetMemberType(propertyExp))),
                     "startswith" => Expression.Call(
                         propertyExp,
                         typeof(string).GetMethod(nameof(string.StartsWith), new Type[] { typeof(string) })!,

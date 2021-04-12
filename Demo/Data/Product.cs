@@ -25,5 +25,7 @@ namespace vNext.BlazorComponents.Demo.Data
         [Range(0, 200)]
         public double Length { get; set; }
         public double Volume => Height * Width * Length;
+
+        public bool? NullableBoolean => Id % 3 == 0 ? null : true;
     }
 }

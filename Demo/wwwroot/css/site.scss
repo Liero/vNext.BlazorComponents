@@ -43,16 +43,14 @@ a, .btn-link {
     cursor: pointer;
 }
 
-.sort-asc::after, .sort-desc::after {
+.sort-asc::after {
+    content: ' \2191';
     transform: translateY(-0.125em);
+}
 
-    &.sort-asc {
-        content: ' \2191';
-    }
-
-    &.sort-desc {
-        content: ' \2191';
-    }
+.sort-desc::after {
+    content: ' \2193';
+    transform: translateY(-0.125em);
 }
 
 #blazor-error-ui {
