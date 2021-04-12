@@ -120,31 +120,4 @@
         _sortingModel.AddSorting(args.ColumnDef.Field, args.EventArgs.ShiftKey);
         await Reload();
     }
-
-    void OnFieldChanged(object sender, FieldChangedEventArgs args)
-    {
-        if (args.FieldIdentifier.Model is Product product)
-        {
-            _grid.FindRow(product)?.Refresh();
-
-            switch (args.FieldIdentifier.FieldName)
-            {
-                case nameof(Product.Height):
-                case nameof(Product.Width):
-                case nameof(Product.Length):
-                    // _totalVolume.Refresh();
-                    break;
-            }
-
-            if (_grid.SelectedItems.Contains(product) && _grid.SelectedItems.Count > 1)
-            {
-                var value = Utils.PathEvaluator.GetProperty(args.FieldIdentifier.Model, args.FieldIdentifier.FieldName).GetValue();
-                foreach (var selectedProduct in _grid.SelectedItems)
-                {
-                    var prop = Utils.PathEvaluator.GetProperty(selectedProduct, args.FieldIdentifier.FieldName);
-                    prop.TrySetValue(value);
-                }
-            }
-        }
-    }
 }

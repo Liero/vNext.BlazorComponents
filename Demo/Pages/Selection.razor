@@ -10,7 +10,7 @@
     <li>ctrl+click to toggle row selection</li>
     <li>edit multiple selected rows at once</li>
 </ul>
-    
+
 <EditForm EditContext="_editContext" Context="model">
     <DataAnnotationsValidator />
 
@@ -88,11 +88,13 @@
 
             if (_grid.SelectedItems.Contains(product) && _grid.SelectedItems.Count > 1)
             {
-                var value = Utils.PathEvaluator.GetProperty(args.FieldIdentifier.Model, args.FieldIdentifier.FieldName).GetValue();
+                var valueGetter = FieldUtils.CreatePropertyLambda<Product>(args.FieldIdentifier.FieldName).Compile();
+                var valueSetter = FieldUtils.CreateAssignLambda<Product>(args.FieldIdentifier.FieldName).Compile();
+                var value = valueGetter.DynamicInvoke(product);
                 foreach (var selectedProduct in _grid.SelectedItems)
                 {
-                    var prop = Utils.PathEvaluator.GetProperty(selectedProduct, args.FieldIdentifier.FieldName);
-                    prop.TrySetValue(value);
+                    valueSetter.DynamicInvoke(selectedProduct, value);
+                    _grid?.FindRow(selectedProduct)?.Refresh();
                 }
             }
         }
