@@ -35,6 +35,9 @@
     <ColumnDef TRow="Product" Field="Name" Width="minmax(5em, auto)">
         @context.Name
     </ColumnDef>
+    <ColumnDef TRow="Product" Field="Details.DateTimeProperty" Header="A null propagation">
+        @context.Details?.DateTimeProperty
+    </ColumnDef>
     <ColumnDef TRow="Product" Field="Length">
         @context.Length
     </ColumnDef>
@@ -103,6 +106,7 @@
         {
             var sort = _sortingModel.Descriptors[i];
             var lambda = FieldUtils.CreatePropertyLambda<Product>(sort.Field);
+            lambda = FieldUtils.AddNullChecks(lambda);
             query = query.OrderBy(lambda, sort.Descending, i > 0);
         }
         _products = query.ToArray();

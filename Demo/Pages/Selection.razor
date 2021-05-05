@@ -88,8 +88,9 @@
 
             if (_grid.SelectedItems.Contains(product) && _grid.SelectedItems.Count > 1)
             {
-                var valueGetter = FieldUtils.CreatePropertyLambda<Product>(args.FieldIdentifier.FieldName).Compile();
-                var valueSetter = FieldUtils.CreateAssignLambda<Product>(args.FieldIdentifier.FieldName).Compile();
+                var propertyExpression = FieldUtils.CreatePropertyLambda<Product>(args.FieldIdentifier.FieldName);
+                var valueGetter = propertyExpression.AddNullChecks().Compile();
+                var valueSetter = propertyExpression.CreateAssignLambda().Compile();
                 var value = valueGetter.DynamicInvoke(product);
                 foreach (var selectedProduct in _grid.SelectedItems)
                 {

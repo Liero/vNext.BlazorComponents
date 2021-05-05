@@ -81,7 +81,7 @@ namespace vNext.BlazorComponents.Data
 
         public virtual IFilterDescriptor CreateDescriptor()
         {
-            return new FilterDescriptor(SelectedField!, SelectedOperator!, GetValue());
+            return new FieldFilterDescriptor(SelectedField!, SelectedOperator!, GetValue());
         }
     }
 
@@ -100,7 +100,7 @@ namespace vNext.BlazorComponents.Data
                 if (!string.IsNullOrEmpty(value))
                 {
                     var propertyLambda = FieldUtils.CreatePropertyLambda(typeof(TItem), value);
-                    SelectedFieldClrType = FieldUtils.GetMemberType(propertyLambda.Body); 
+                    SelectedFieldClrType = propertyLambda.ReturnType;
                 }
                 base.SelectedField = value;
                 if (SelectedOperator == null || !AvailableOperators.Contains(SelectedOperator))

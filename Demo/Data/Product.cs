@@ -27,5 +27,14 @@ namespace vNext.BlazorComponents.Demo.Data
         public double Volume => Height * Width * Length;
 
         public bool? NullableBoolean => Id % 3 == 0 ? null : true;
+
+        public ProductDetails Details { get; set; }
     }
+
+    public class ProductDetails
+    {
+        public DateTime? DateTimeProperty => DateTime.Now;
+        public string Manufacturer { get; set; }
+    }
+
 }

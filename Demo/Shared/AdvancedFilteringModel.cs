@@ -8,9 +8,9 @@ namespace vNext.BlazorComponents.Demo.Shared
 {
     public class AdvancedFilteringModel<TItem> : FilteringModel<TItem>
     {
-        public FilterDescriptor CurrentDescriptor { get; private set; }
+        public FieldFilterDescriptor CurrentDescriptor { get; private set; }
 
-        public void StartEdit(FilterDescriptor filterDescriptor)
+        public void StartEdit(FieldFilterDescriptor filterDescriptor)
         {
             CurrentDescriptor = filterDescriptor;
             SelectedField = filterDescriptor?.Field;

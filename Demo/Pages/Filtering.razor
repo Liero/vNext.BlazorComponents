@@ -40,7 +40,7 @@
     {
         <div class="d-flex align-items-center">
             Filters:
-            @foreach (FilterDescriptor filter in FilteringModel.Descriptors)
+            @foreach (FieldFilterDescriptor filter in FilteringModel.Descriptors)
             {
                 <span class="mr-1">
                     <span class="badge badge-info">
@@ -147,6 +147,6 @@
     private void FilterByCellValue(Cell<Product> cell, string @operator = "==")
     {
         object cellValue = FieldUtils.CreatePropertyLambda<Product>(cell.ColumnDef.Field).Compile().DynamicInvoke(cell.Data);
-        FilteringModel.Descriptors.Add(new FilterDescriptor(cell.ColumnDef.Field, @operator, cellValue));
+        FilteringModel.Descriptors.Add(new FieldFilterDescriptor(cell.ColumnDef.Field, @operator, cellValue));
     }
 }

@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="Blazor.ContextMenu" Version="1.9.0" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.12.3" />
   </ItemGroup>
 
   <ItemGroup>

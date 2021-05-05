@@ -51,7 +51,7 @@
     <ColumnDefEx TRow="Product" Field="Length" />
     <ColumnDefEx TRow="Product" Field="Width" />
     <ColumnDefEx TRow="Product" Field="Height" Width="100px" />
-    <ColumnDefEx TRow="Product" Field="NullableBoolean" />
+    <ColumnDefEx TRow="Product" Field="Details.Manufacturer" Header="a null propagation" />
     <ColumnDef TRow="Product" Header="Volume" CellClass="text-right" Width="min-content"
                CellClassSelector="@(e => e.Data.Volume > 100 ? "bg-danger" : "bg-success")">
         @((context.Height * context.Width * context.Length / 1000).ToString("f3")) m<sup>3</sup>
@@ -136,14 +136,9 @@
     /// </summary>
     void CustomizeFilter(CreatingPredicateEventArgs<Product> args)
     {
-        if (args.FilterDescriptor is FilterDescriptor filter)
+        if (args.FilterDescriptor is FieldFilterDescriptor filter)
         {
-            args.Predicate = filter.Operator switch
-            {
-                "startswith" => CustomFilterPredicates.StartsWithIgnoreCase<Product>(filter.Field, (string)filter.Value),
-                "contains" => CustomFilterPredicates.ContainsIgnoreCase<Product>(filter.Field, (string)filter.Value),
-                _ => null
-            };
+            args.Predicate = CustomFilterPredicates.CreatePredicate<Product>(filter, addNullChecks: true);
         }
     }
 }

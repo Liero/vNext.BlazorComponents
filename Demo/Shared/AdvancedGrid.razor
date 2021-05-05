@@ -1,4 +1,5 @@
-﻿@using System.Linq.Expressions
+﻿
+@using System.Linq.Expressions
 @using BlazorContextMenu
 @using vNext.BlazorComponents.Grid
 @using vNext.BlazorComponents.Data
@@ -15,7 +16,7 @@
      class="d-flex flex-column overflow-hidden">
     <div class="d-flex align-items-center">
         <Container @ref="_filterArea">
-            @foreach (FilterDescriptor filter in FilteringModel.Descriptors)
+            @foreach (FieldFilterDescriptor filter in FilteringModel.Descriptors)
             {
                 <span class="btn-group mr-1">
                     <span class="btn btn-info btn-sm"
@@ -61,12 +62,12 @@
                             <InputSelect @bind-Value="FilteringModel.SelectedField" class="form-control" placeholder="select field">
                                 <option hidden class="text-muted">Field</option>
                                 @if (_simpleGrid != null)
-                                {
-                                    @foreach (var header in _simpleGrid.GetHeaders().Where(h => h.ColumnDef.Field != null))
                                     {
+                                    @foreach (var header in _simpleGrid.GetHeaders().Where(h => h.ColumnDef.Field != null))
+                                        {
                                         <option value="@header.ColumnDef.Field">@header.Text</option>
+                                        }
                                     }
-                                }
                             </InputSelect>
                         </div>
                     }
@@ -124,7 +125,7 @@
 </div>
 
 
-@code 
+@code
 {
     List<TRow> _currentView;
     SimpleGrid<TRow> _simpleGrid;
@@ -169,6 +170,7 @@
     [Parameter] public EventCallback<RowMouseEventArgs<TRow>> OnRowClick { get; set; }
     [Parameter] public EventCallback<CreatingPredicateEventArgs<TRow>> OnCreatingFilterPredicate { get; set; }
 
+    public IEnumerable<ColumnDef<TRow>> ColumnDefinitions => _simpleGrid?.ColumnDefinitions ?? Enumerable.Empty<ColumnDef<TRow>>();
     public int? TotalCount { get => Items?.Count ?? _providedTotalCount; }
     public IEnumerable<TRow> GetCurrentData() => CurrentView ?? _simpleGrid.GetVisibleRows().OrderBy(row => row.Index).Select(row => row.Data);
     protected List<TRow> CurrentView { get => _currentView ?? (_currentView = CalculateView()); }
@@ -206,7 +208,7 @@
         if (columnDef is ColumnDefEx<TRow> ex)
         {
             var cellValue = ex.ValueGetter(data);
-            FilteringModel.Descriptors.Add(new FilterDescriptor(columnDef.Field, @operator, cellValue));
+            FilteringModel.Descriptors.Add(new FieldFilterDescriptor(columnDef.Field, @operator, cellValue));
         }
     }
 
@@ -249,9 +251,19 @@
 
     Expression<Func<TRow, bool>> CreatePredicate(IFilterDescriptor descriptor)
     {
-        var args = new CreatingPredicateEventArgs<TRow>(descriptor);
+        var fieldFilter = descriptor as FieldFilterDescriptor;
+        var column = fieldFilter != null ? ColumnDefinitions.FirstOrDefault(c => c.Field == fieldFilter.Field) : null;
+
+        // allow to customize the filter predicate by consumer
+        var args = new CreatingPredicateEventArgs<TRow>(descriptor, column);
         OnCreatingFilterPredicate.InvokeAsync(args).GetAwaiter().GetResult();
-        return args.Predicate ?? descriptor.CreatePredicate<TRow>();
+        if (args.Predicate != null)
+        {
+            return args.Predicate;
+        }
+
+        // extend default filtering functionality by custom operators and propertyExpression with null checks
+        return Data.CustomFilterPredicates.CreatePredicate<TRow>(descriptor, addNullChecks: true);
     }
 
     List<TRow> CalculateView()
@@ -266,7 +278,8 @@
         for (int i = 0; i < SortingModel.Descriptors.Count; i++)
         {
             var sort = SortingModel.Descriptors[i];
-            var lambda = FieldUtils.CreatePropertyLambda<TRow>(sort.Field);
+            var lambda = (FindColumn(sort.Field) as ColumnDefEx<TRow>)?.SortBy
+                ?? FieldUtils.CreatePropertyLambda<TRow>(sort.Field).AddNullChecks();
             query = query.OrderBy(lambda, sort.Descending, i > 0);
         }
         return query.ToList();
@@ -284,7 +297,9 @@
         return css;
     }
 
-    private string GetHeaderText(string field)
+    ColumnDef<TRow> FindColumn(string field) => this.ColumnDefinitions.FirstOrDefault(c => c.Field == field);
+
+    string GetHeaderText(string field)
     {
         return _simpleGrid?.GetHeaders().FirstOrDefault(h => h.ColumnDef.Field == field)?.Text
             ?? field;

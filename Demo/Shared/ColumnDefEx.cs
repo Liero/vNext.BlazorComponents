@@ -26,12 +26,11 @@ namespace vNext.BlazorComponents.Demo.Shared
                 var propertyLambda = FieldUtils.CreatePropertyLambda<TRow>(Field);
                 if (ValueGetter == null)
                 {
-                    var valueGetter = propertyLambda.Compile();
-                    ValueGetter = rowData => valueGetter.DynamicInvoke(rowData);
+                    ValueGetter = propertyLambda.AddNullChecks().CastFunc<TRow, object>().Compile();
                 }
                 if (SortBy == null)
                 {
-                    SortBy = propertyLambda;
+                    SortBy = propertyLambda.AddNullChecks();
                 }
                 if (ChildContent == null)
                 {
