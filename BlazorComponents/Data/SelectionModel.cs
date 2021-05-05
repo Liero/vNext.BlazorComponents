@@ -49,6 +49,7 @@ namespace vNext.BlazorComponents.Data
                 {
                     SelectedIndex = index ?? -1;
                     SelectedItem = item;
+                    SelectedItems.Add(item);
                 }
             }
             else if (range && GetRange != null && SelectedItem != null && item != null)
