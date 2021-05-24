@@ -58,11 +58,11 @@ var vNext;
 
             let stop = (e) => {
                 document.removeEventListener('mousemove', move);
-                document.removeEventListener('mouseup', stop);
                 this.dotNetRef.invokeMethodAsync('OnResizeInterop', colIndex, columnWidths);
             }
             document.addEventListener('mousemove', move);
-            document.addEventListener('mouseup', stop);
+            document.addEventListener('mouseup', stop, { once: true });
+            document.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); }, { once: true, capture: true });
         }
 
         static init(elementRef, dotNetRef) {
