@@ -81,7 +81,7 @@ namespace vNext.BlazorComponents.Data
         public static Expression<Func<TSource, TValue>> CastFunc<TSource, TValue>(this LambdaExpression propertyLambda)
         {
             // adds cast to getter if needed. e.g. item.Property1 -> (TValue)item.Property1
-            Expression body = propertyLambda.ReturnType == typeof(TValue)
+            Expression body = propertyLambda.ReturnType.IsAssignableFrom(typeof(TValue))
                 ? propertyLambda.Body 
                 : Expression.Convert(propertyLambda.Body, typeof(TValue));
 
