@@ -27,8 +27,8 @@ namespace vNext.BlazorComponents.Demo.Data
                     fieldExpression.Body,
                     typeof(string).GetMethod(nameof(string.StartsWith), new[] { typeof(string), typeof(StringComparison) }),
                     Expression.Constant(value ?? ""),
-                    Expression.Constant(StringComparison.CurrentCultureIgnoreCase))
-            );
+                    Expression.Constant(StringComparison.CurrentCultureIgnoreCase)),
+               fieldExpression.Parameters);
         }
 
         /// <summary>
