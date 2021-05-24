@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+﻿/* originated from https://github.com/leandromoh/NullPropagationVisitor  */
+
+#nullable disable
+using System;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
+using static vNext.BlazorComponents.Data.Expressions.HelperMethods;
 
 namespace vNext.BlazorComponents.Data.Expressions
 {
@@ -19,39 +18,49 @@ namespace vNext.BlazorComponents.Data.Expressions
 
         protected override Expression VisitLambda<T>(Expression<T> node)
         {
-            var body = Visit(node.Body);
-            var expectedReturnType = MakeNullableType(node.ReturnType);
-            if (body.Type != expectedReturnType)
+            Expression visitedBody = Visit(node.Body);
+            
+            if (visitedBody.Type.IsAssignableTo(node.ReturnType))
             {
-                body = Expression.Convert(body, expectedReturnType);
+                //creates lambda of the same type
+                return Expression.Lambda(node.Type, visitedBody, node.Parameters);
             }
-            return Expression.Lambda(body, node.Parameters);
+            //infer new return type based on body
+            return Expression.Lambda(visitedBody, node.Parameters);
         }
 
         protected override Expression VisitUnary(UnaryExpression propertyAccess)
         {
-            if (propertyAccess.Operand is MemberExpression mem)
-                return VisitMember(mem);
+            if (propertyAccess.NodeType == ExpressionType.Convert)
+                return VisitConvert(propertyAccess);
 
-            if (propertyAccess.Operand is MethodCallExpression met)
-                return VisitMethodCall(met);
+            if (propertyAccess.Operand is MemberExpression member)
+                return VisitMember(member);
 
-            if (propertyAccess.Operand is ConditionalExpression cond)
-                return Expression.Condition(
-                        test: cond.Test,
-                        ifTrue: MakeNullable(Visit(cond.IfTrue)),
-                        ifFalse: MakeNullable(Visit(cond.IfFalse)));
+            if (propertyAccess.Operand is MethodCallExpression method)
+                return VisitMethodCall(method);
+
+            if (propertyAccess.Operand is ConditionalExpression condition)
+                return VisitConditional(condition);
 
             return base.VisitUnary(propertyAccess);
         }
 
+        protected override Expression VisitConditional(ConditionalExpression cond)
+        {
+            return Expression.Condition(
+                        test: cond.Test,
+                        ifTrue: MakeNullable(Visit(cond.IfTrue)),
+                        ifFalse: MakeNullable(Visit(cond.IfFalse)));
+        }
+
         protected override Expression VisitMember(MemberExpression propertyAccess)
         {
-            if (propertyAccess.Expression == null)
+            return Common(propertyAccess.Expression, caller =>
             {
-                throw new ArgumentException($"The parameter member {propertyAccess}.{propertyAccess.Expression} cannot be null", nameof(propertyAccess));
-            }
-            return Common(propertyAccess.Expression, propertyAccess);
+                return MakeNullable(new ExpressionReplacerVisitor(propertyAccess.Expression,
+                IsNullableStruct(propertyAccess.Expression) ? caller : RemoveNullable(caller)).Visit(propertyAccess));
+            });
         }
 
         protected override Expression VisitMethodCall(MethodCallExpression propertyAccess)
@@ -59,40 +68,84 @@ namespace vNext.BlazorComponents.Data.Expressions
             if (propertyAccess.Object == null)
                 return base.VisitMethodCall(propertyAccess);
 
-            return Common(propertyAccess.Object, propertyAccess);
+            return Common(propertyAccess.Object, caller =>
+            {
+                return MakeNullable(new ExpressionReplacerVisitor(propertyAccess.Object,
+                IsNullableStruct(propertyAccess.Object) ? caller : RemoveNullable(caller)).Visit(propertyAccess));
+            });
         }
 
-        private Expression Common(Expression instance, Expression propertyAccess)
+        protected virtual Expression VisitConvert(UnaryExpression propertyAccess)
         {
-            
+            if (propertyAccess.NodeType != ExpressionType.Convert)
+                throw new InvalidOperationException("invalid call");
+
+            return Common(propertyAccess.Operand, caller =>
+            {
+                return Expression.Convert(RemoveNullable(caller), propertyAccess.Type);
+            });
+        }
+
+        private BlockExpression Common(Expression instance, Func<Expression, Expression> callback)
+        {
             var safe = _recursive ? base.Visit(instance) : instance;
+
+            if (!IsNullable(safe.Type))
+                throw new InvalidOperationException($"Can not apply operand on type {safe.Type.Name}. Only nullable are allowed.");
+
+            // assign expression in the left side of the operator '?.' to a variable to evaluate once
             var caller = Expression.Variable(safe.Type, "caller");
             var assign = Expression.Assign(caller, safe);
-            var acess = MakeNullable(new ExpressionReplacer(instance,
-                IsNullableStruct(instance) ? caller : RemoveNullable(caller)).Visit(propertyAccess)!);
+
+            var acess = MakeNullable(callback(caller));
             var ternary = Expression.Condition(
-                        test: Expression.Equal(caller, Expression.Constant(null)),
-                        ifTrue: Expression.Constant(null, acess.Type),
-                        ifFalse: acess);
+                test: Expression.Equal(caller, Expression.Constant(null)),
+                ifTrue: Expression.Constant(null, acess.Type),
+                ifFalse: acess);
 
             return Expression.Block(
-                type: acess.Type,
-                variables: new[]
-                {
-                caller,
-                },
-                expressions: new Expression[]
-                {
-                assign,
-                ternary,
-                });
+                    type: acess.Type,
+                    variables: new[]
+                    {
+                            caller,
+                    },
+                    expressions: new Expression[]
+                    {
+                            assign,
+                            ternary,
+                    });
+        }
+    }
+
+    internal class ExpressionReplacerVisitor : ExpressionVisitor
+    {
+        private readonly Expression _oldEx;
+        private readonly Expression _newEx;
+
+        internal ExpressionReplacerVisitor(Expression oldEx, Expression newEx)
+        {
+            _oldEx = oldEx;
+            _newEx = newEx;
         }
 
-        public static Type MakeNullableType(Type type)
+        public override Expression Visit(Expression node)
         {
-            return type.IsValueType && Nullable.GetUnderlyingType(type) == null
-                ? typeof(Nullable<>).MakeGenericType(type)
-                : type;
+            if (node == _oldEx)
+                return _newEx;
+
+            return base.Visit(node);
+        }
+    }
+
+    static class HelperMethods
+    {
+        private static bool IsValueType(this Type type)
+        {
+#if !NETSTANDARD1_1
+            return type.IsValueType;
+#else
+            return System.Reflection.IntrospectionExtensions.GetTypeInfo(type).IsValueType;
+#endif
         }
 
         public static Expression MakeNullable(Expression ex)
@@ -100,45 +153,43 @@ namespace vNext.BlazorComponents.Data.Expressions
             if (IsNullable(ex))
                 return ex;
 
-            return Expression.Convert(ex, typeof(Nullable<>).MakeGenericType(ex.Type));
+            return Expression.Convert(ex, MakeNullable(ex.Type));
         }
 
-        private static bool IsNullable(Expression ex)
+        public static Type MakeNullable(Type type)
         {
-            return !ex.Type.IsValueType || Nullable.GetUnderlyingType(ex.Type) != null;
+            if (IsNullable(type))
+                return type;
+
+            return typeof(Nullable<>).MakeGenericType(type);
         }
 
-        private static bool IsNullableStruct(Expression ex)
+        public static bool IsNullable(Expression ex)
         {
-            return ex.Type.IsValueType && Nullable.GetUnderlyingType(ex.Type) != null;
+            return IsNullable(ex.Type);
         }
 
-        private static Expression RemoveNullable(Expression ex)
+        public static bool IsNullable(Type type)
+        {
+            return !type.IsValueType() || (Nullable.GetUnderlyingType(type) != null);
+        }
+
+        public static bool IsNullableStruct(Expression ex)
+        {
+            return ex.Type.IsValueType() && (Nullable.GetUnderlyingType(ex.Type) != null);
+        }
+
+        public static bool IsReferenceType(Expression ex)
+        {
+            return !ex.Type.IsValueType();
+        }
+
+        public static Expression RemoveNullable(Expression ex)
         {
             if (IsNullableStruct(ex))
                 return Expression.Convert(ex, ex.Type.GenericTypeArguments[0]);
 
             return ex;
-        }
-
-        private class ExpressionReplacer : ExpressionVisitor
-        {
-            private readonly Expression _oldEx;
-            private readonly Expression _newEx;
-
-            internal ExpressionReplacer(Expression oldEx, Expression newEx)
-            {
-                _oldEx = oldEx;
-                _newEx = newEx;
-            }
-
-            public override Expression? Visit(Expression? node)
-            {
-                if (node == _oldEx)
-                    return _newEx;
-
-                return base.Visit(node);
-            }
         }
     }
 }

@@ -34,7 +34,7 @@ namespace vNext.BlazorComponents.Demo.Data
             {
                 foreach (var filter in filters)
                 {
-                    var predicate = CustomFilterPredicates.CreatePredicate<Product>(filter);
+                    var predicate = CustomFilterPredicates.CreatePredicate<Product>(filter, addNullChecks: true /* false when using EF Core*/);
                     query = query.Where(predicate);
                 }
             }
@@ -43,6 +43,7 @@ namespace vNext.BlazorComponents.Demo.Data
                 foreach (var sort in sortBy)
                 {
                     var lambda = FieldUtils.CreatePropertyLambda<Product>(sort.Field);
+                    lambda = lambda.AddNullChecks(); // do this only when filtering in memory. Not needed in EF Core.
                     query = query.OrderBy(lambda, sort.Descending, thenBy: sort != sortBy[0]);
                 }
             }

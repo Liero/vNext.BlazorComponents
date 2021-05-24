@@ -90,7 +90,7 @@ namespace BlazorComponents.Demo.Tests
         }
 
         [TestMethod]
-        public void Foo2()
+        public void FindExpressionVisitor_Find()
         {
             Expression<Func<Foo, object?>> f = foo => (object?)foo.Name!.Length;
             var memberExpression = FindExpressionVisitor.Find(f, f => f is MemberExpression);

@@ -10,6 +10,9 @@ using vNext.BlazorComponents.Data.Expressions;
 
 namespace BlazorComponents.Demo.Tests
 {
+#nullable enable
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+
     [TestClass]
     public class NullPropagationVisitorTests
     {
@@ -18,11 +21,9 @@ namespace BlazorComponents.Demo.Tests
         [TestMethod]
         public void NullPropagationVisitor_AddsNullChecks()
         {
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
 
             Expression<Func<Foo, char>> expression = foo => foo.Child.Name.ToString()[0];
 
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
             //sut
             var visitor = new NullPropagationVisitor(true);
@@ -37,5 +38,32 @@ namespace BlazorComponents.Demo.Tests
         }
 
 
+        [TestMethod]
+        public void NullPropagationVisitor_KeepsCastInLambda()
+        {
+            Expression<Func<Foo, object>> expression = foo => (object)foo.Child.Name.Length;
+            Type expectedType = typeof(Func<Foo, object?>);
+
+            //sut
+            var visitor = new NullPropagationVisitor(true);
+
+            //action
+            LambdaExpression expressionWithNullChecks = (LambdaExpression)visitor.Visit(expression);
+            Assert.AreEqual(expectedType, expressionWithNullChecks.Type);
+        }
+
+        [TestMethod]
+        public void NullPropagationVisitor_LambdasHasCorrectSignature()
+        {
+            Expression<Func<Foo, object?>> expression = foo => foo.Child.Name;
+            Type expectedType = typeof(Func<Foo, object?>);
+
+            //sut
+            var visitor = new NullPropagationVisitor(true);
+
+            //action
+            LambdaExpression expressionWithNullChecks = (LambdaExpression)visitor.Visit(expression);
+            Assert.AreEqual(expectedType, expressionWithNullChecks.Type);
+        }
     }
 }
