@@ -10,6 +10,7 @@ $table-border-color: #f3f2f1 !default;
     display: grid;
     overflow: auto;
     flex-grow: 1;
+    align-content: start;
     --sg-grid-hover-bg: #{$table-hover-bg};
     --sg-grid-hover-color: #{$table-hover-color};
     --sg-grid-selected-bg: #{$table-selected-bg};
