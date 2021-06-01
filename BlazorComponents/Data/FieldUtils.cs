@@ -102,7 +102,7 @@ namespace vNext.BlazorComponents.Data
             {
                 "==" or "equals" => Expression.Equal(propertyExp, Expression.Constant(value, fieldExpression.ReturnType)),
                 "!=" or "<>" or "notequals" => Expression.NotEqual(propertyExp, Expression.Constant(value, fieldExpression.ReturnType)),
-                "<" => Expression.LessThan(propertyExp, Expression.Constant(value)),
+                "<" => Expression.LessThan(propertyExp, Expression.Constant(value, fieldExpression.ReturnType)),
                 "<=" => Expression.LessThanOrEqual(propertyExp, Expression.Constant(value, fieldExpression.ReturnType)),
                 ">" => Expression.GreaterThan(propertyExp, Expression.Constant(value, fieldExpression.ReturnType)),
                 ">=" => Expression.GreaterThanOrEqual(propertyExp, Expression.Constant(value, fieldExpression.ReturnType)),
