@@ -51,6 +51,7 @@ var vNext;
 
             /**@param {MouseEvent} e  */
             let move = e => {
+                e.preventDefault();
                 var diff = e.clientX - x;
                 columnWidths[colIndex] = initialWidth + diff;
                 this.gridElement.style['grid-template-columns'] = columnWidths.map(c => `${c}px`).join(' ');
