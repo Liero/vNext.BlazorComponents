@@ -14,6 +14,7 @@ namespace vNext.BlazorComponents.Demo.Data
         };
         public async Task<Product[]> GetProducts()
         {
+            var rnd = new Random();
             await Task.Delay(200);
             return Enumerable.Range(1, 100).Select(i => new Product
             {
@@ -22,6 +23,7 @@ namespace vNext.BlazorComponents.Demo.Data
                 Width = 5,
                 Name = Categories[i % Categories.Length] + i,
                 Category = Categories[i % Categories.Length],
+                Rating = rnd.Next(10, 50) / 10d,
                 Length = i % 5 + 1
             }).ToArray();            
         }

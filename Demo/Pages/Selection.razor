@@ -77,14 +77,6 @@
         {
             _grid.FindRow(product)?.Refresh();
 
-            switch (args.FieldIdentifier.FieldName)
-            {
-                case nameof(Product.Height):
-                case nameof(Product.Width):
-                case nameof(Product.Length):
-                    // _totalVolume.Refresh();
-                    break;
-            }
 
             if (_grid.SelectedItems.Contains(product) && _grid.SelectedItems.Count > 1)
             {
@@ -98,6 +90,7 @@
                     _grid?.FindRow(selectedProduct)?.Refresh();
                 }
             }
+            InvokeAsync(StateHasChanged);
         }
     }
 

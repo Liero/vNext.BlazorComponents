@@ -9,7 +9,7 @@ namespace vNext.BlazorComponents.Grid
 {
     public partial class Row<TRow> : IDisposable
     {
-        private bool _shouldRender = true;
+        protected internal bool ShouldRenderFlag = true;
         private List<CellRef>? _cellRefs;
 
         [Parameter] public TRow? Data { get; set; }
@@ -18,13 +18,20 @@ namespace vNext.BlazorComponents.Grid
 
         public bool IsSelected => Grid!.SelectedItems?.Contains(Data!) == true;
 
+        internal void Invalidate(bool invalidateCells = true)
+        {
+            ShouldRenderFlag = true;
+            if (invalidateCells && _cellRefs != null)
+            {
+                _cellRefs.ForEach(c => c.Ref?.Invalidate());
+            }
+            //clear all precalulated assets here
+        }
+
         public void Refresh(bool refreshCells = true)
         {
-            _shouldRender = true;
-            if (refreshCells && _cellRefs != null)
-            {
-                _cellRefs.ForEach(c => c.Ref?.Refresh());
-            }
+            Invalidate(refreshCells);
+            StateHasChanged();
         }
 
         public Cell<TRow>? FindCell(ColumnDef<TRow> column)
@@ -34,13 +41,7 @@ namespace vNext.BlazorComponents.Grid
 
         protected override void OnInitialized() => Grid!.AddRow(this);
 
-        protected override bool ShouldRender() => _shouldRender;
-
-        protected override void OnAfterRender(bool firstRender)
-        {
-            _shouldRender = false;
-            base.OnAfterRender(firstRender);
-        }
+        protected override bool ShouldRender() => ShouldRenderFlag;
 
         protected virtual Task OnClick(MouseEventArgs mouseEvent) =>
             Grid!.OnRowClick.InvokeAsync(new RowMouseEventArgs<TRow>(this, mouseEvent));

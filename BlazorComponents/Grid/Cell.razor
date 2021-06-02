@@ -1,2 +1,7 @@
 ﻿@typeparam TRow
-<div class="@ResolveCssClass()" style="@ColumnDef.FrozenLeft" @key="ColumnDef">@ColumnDef.ChildContent?.Invoke(Data)</div>
+<CascadingValue IsFixed="true" Value="this">
+    <div class="@ResolveCssClass()" style="@ColumnDef.FrozenLeft" @key="ColumnDef">@ColumnDef.ChildContent?.Invoke(Data)</div>
+</CascadingValue>
+@{
+    ShouldRenderFlag = false;
+}

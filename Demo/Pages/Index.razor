@@ -24,6 +24,7 @@
                     @ref="_grid"
                     @key="_moreColumns">
             <ColumnDef TRow="Product" Header="Id" Width="3em">
+                @{ Console.WriteLine("ID"); }
                 @context.Id
             </ColumnDef>
             <ColumnDef TRow="Product" Header="Name" Width="minmax(5em, auto)">
@@ -96,18 +97,12 @@
 
     void OnFieldChanged(object sender, FieldChangedEventArgs args)
     {
+        Console.WriteLine("FieldCanged");
         if (args.FieldIdentifier.Model is Product product)
         {
             _grid.FindRow(product)?.Refresh();
-
-            switch (args.FieldIdentifier.FieldName)
-            {
-                case nameof(Product.Height):
-                case nameof(Product.Width):
-                case nameof(Product.Length):
-                    // _totalVolume.Refresh();
-                    break;
-            }
+            _grid.FindRow(product)?.Refresh();
+            _grid.FindRow(product)?.Refresh();
         }
     }
 
