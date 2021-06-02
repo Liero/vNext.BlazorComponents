@@ -10,6 +10,8 @@ namespace vNext.BlazorComponents.Grid
 {
     public partial class SimpleGrid<TRow> : ComponentBase, IDisposable
     {
+        public static float DefaultRowHeight { get; set; } = 32;
+        public static float DefaultOverscanCount { get; set; } = 10;
         protected internal bool ShouldRenderFlag = true;
 
         private string? _gridTemplateColumns;
@@ -24,10 +26,9 @@ namespace vNext.BlazorComponents.Grid
 
         #region parameters
 
-        [Inject] protected IJSRuntime? JS { get; set; }
+        [Inject] protected IJSRuntime JS { get; set; } = default!;
 
-        [Parameter] 
-        public string? @class { get; set;}
+        [Parameter] public string? @class { get; set;}
 
         [Parameter]
         public ICollection<TRow>? Items
@@ -44,7 +45,8 @@ namespace vNext.BlazorComponents.Grid
 
         [Parameter] public Func<Row<TRow>, string?>? RowClassSelector { get; set; }
 
-        [Parameter] public int OverscanCount { get; set; } = 3;
+        [Parameter] public float RowHeight { get; set; } = DefaultRowHeight;
+        [Parameter] public int OverscanCount { get; set; } = DefaultOverscanCount;
 
         [Parameter] public List<ColumnDef<TRow>> ColumnDefinitions { get; set; } = new List<ColumnDef<TRow>>();
 
@@ -139,7 +141,7 @@ namespace vNext.BlazorComponents.Grid
 
         public async Task<Cell<TRow>?> GetCellFromPoint(double clientX, double clientY)
         {
-            var result = await JS!.InvokeAsync<int[]>("vNext.SimpleGrid.getCellFromPoint", new { clientX, clientY });
+            var result = await JS.InvokeAsync<int[]>("vNext.SimpleGrid.getCellFromPoint", new { clientX, clientY });
             int colIndex = result[0];
             int rowIndex = result[1];
             if (colIndex < 0)
