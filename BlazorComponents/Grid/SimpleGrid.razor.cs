@@ -10,7 +10,8 @@ namespace vNext.BlazorComponents.Grid
 {
     public partial class SimpleGrid<TRow> : ComponentBase, IDisposable
     {
-        private bool _shouldRender = true;
+        protected internal bool ShouldRenderFlag = true;
+
         private string? _gridTemplateColumns;
         private ElementReference? _elementRef;
         private Virtualize<RowWrapper>? _virtualizeRef;
@@ -20,9 +21,13 @@ namespace vNext.BlazorComponents.Grid
         private ICollection<TRow>? _items;
         private ICollection<RowWrapper>? _wrappedItems;
         private ICollection<TRow> _selectedItems = Array.Empty<TRow>();
+
         #region parameters
 
         [Inject] protected IJSRuntime? JS { get; set; }
+
+        [Parameter] 
+        public string? @class { get; set;}
 
         [Parameter]
         public ICollection<TRow>? Items
@@ -32,7 +37,7 @@ namespace vNext.BlazorComponents.Grid
                 if (_items != value)
                 {
                     _items = value;
-                    Invalidate();
+                    Invalidate(false);
                 }
             }
         }
@@ -46,6 +51,10 @@ namespace vNext.BlazorComponents.Grid
 
         [Parameter] public int FrozenColumns { get; set; } = 0;
 
+        /// <summary>
+        /// additional CSS class of the .simple-grid element. 
+        /// In order to set css class to the container element use class="your-class"
+        /// </summary>
         [Parameter] public string? CssClass { get; set; }
 
 
@@ -73,7 +82,6 @@ namespace vNext.BlazorComponents.Grid
                     {
                         FindRow(item)?.Refresh(false);
                     }
-                    Invalidate();
                 }
             }
         }
@@ -92,9 +100,27 @@ namespace vNext.BlazorComponents.Grid
         /// <remarks>Not all items in <see cref="Items"/> have corresponding <see cref="Row{TRow}"/> due to virtualization</remarks>
         public IEnumerable<Row<TRow>> GetVisibleRows() => _rows.AsEnumerable();
 
-        public void Refresh()
+        /// <summary>
+        /// Grid will rerender next time StateHasChanged is called
+        /// </summary>
+        public void Invalidate(bool invalidateCells)
         {
-            Invalidate();
+            _gridTemplateColumns = null;
+            ShouldRenderFlag = true;
+
+            _wrappedItems = _items?.Select((item, i) => new RowWrapper(i, item)).ToList();
+
+            foreach (var row in _rows)
+            {
+                row.Refresh(invalidateCells);
+            }
+        }
+
+
+        /// <param name="refreshCells">when false, cells won't be rerendered. E.g when rows collection is changed</param>
+        public void Refresh(bool refreshCells = true)
+        {
+            Invalidate(refreshCells);
             StateHasChanged();
         }
 
@@ -103,10 +129,12 @@ namespace vNext.BlazorComponents.Grid
         /// </summary>
         public async Task ReloadAsync()
         {
+            Invalidate(true);
             if (_virtualizeRef != null)
             {
                 await _virtualizeRef.RefreshDataAsync();
             }
+            StateHasChanged();
         }
 
         public async Task<Cell<TRow>?> GetCellFromPoint(double clientX, double clientY)
@@ -170,18 +198,6 @@ namespace vNext.BlazorComponents.Grid
             });
         }
 
-
-        internal void Invalidate()
-        {
-            _gridTemplateColumns = null;
-            _shouldRender = true;
-            _wrappedItems = _items?.Select((item, i) => new RowWrapper(i, item)).ToList();
-            foreach (var row in _rows)
-            {
-                row.Refresh();
-            }
-        }
-
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             await base.OnAfterRenderAsync(firstRender);
@@ -192,17 +208,15 @@ namespace vNext.BlazorComponents.Grid
             }
             if (_rows.Count > 0)
             {
-                _shouldRender = false;
+                ShouldRenderFlag = false;
             }
         }
 
-        protected override bool ShouldRender() => _shouldRender;
-
-
+        protected override bool ShouldRender() => ShouldRenderFlag;
 
         protected virtual async ValueTask<ItemsProviderResult<RowWrapper>> ProvideItems(ItemsProviderRequest request)
         {
-            var args = new ReadEventArgs<TRow>(request.StartIndex, request.Count);
+            var args = new ReadEventArgs<TRow>(request.StartIndex, request.Count, request.CancellationToken);
             await OnRead.InvokeAsync(args);
             var refs = args.Items.Select((item, index) => new RowWrapper(request.StartIndex + index, item));
             return new ItemsProviderResult<RowWrapper>(refs, args.Total.GetValueOrDefault());

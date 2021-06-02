@@ -1,34 +1,29 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace vNext.BlazorComponents.Grid
 {
     public partial class Cell<TRow> : ComponentBase
     {
-        private bool _shouldRender = true;
+        protected internal bool ShouldRenderFlag { get; set; } = true;
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        [Parameter] public TRow Data { get; set; }
-        [Parameter] public ColumnDef<TRow> ColumnDef { get; set; }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+        [CascadingParameter] public Row<TRow> Row { get; set; } = default!;
+        [Parameter] public ColumnDef<TRow> ColumnDef { get; set; } = default!;
 
+        public TRow Data => Row.Data!;
+
+        internal void Invalidate()
+        {
+            ShouldRenderFlag = true;
+            //clean all precalculated assets here
+        }
 
         public void Refresh()
         {
-            _shouldRender = true;
+            Invalidate();
             StateHasChanged();
         }
 
-        protected override bool ShouldRender() => _shouldRender;
-
-        protected override void OnAfterRender(bool firstRender)
-        {
-            _shouldRender = false;
-            base.OnAfterRender(firstRender);
-        }
+        protected override bool ShouldRender() => ShouldRenderFlag;
 
         private string ResolveCssClass()
         {

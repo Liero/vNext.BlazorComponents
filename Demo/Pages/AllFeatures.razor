@@ -19,6 +19,7 @@
 
 <AdvancedGrid TRow="Product"
               @ref="_grid"
+              @key="_serverFiltering"
               Items="_serverFiltering ? null : _products"
               OnRead="_serverFiltering ? OnRead : null"
               OnCreatingFilterPredicate="CustomizeFilter"
@@ -51,7 +52,8 @@
     <ColumnDefEx TRow="Product" Field="Length" />
     <ColumnDefEx TRow="Product" Field="Width" />
     <ColumnDefEx TRow="Product" Field="Height" Width="100px" />
-    <ColumnDefEx TRow="Product" Field="Details.Manufacturer" Header="a null propagation" />
+    <ColumnDefEx TRow="Product" Field="Rating" />
+    <ColumnDefEx TRow="Product" Field="Details.DateTimeProperty" Header="a null propagation" />
     <ColumnDef TRow="Product" Header="Volume" CellClass="text-right" Width="min-content"
                CellClassSelector="@(e => e.Data.Volume > 100 ? "bg-danger" : "bg-success")">
         @((context.Height * context.Width * context.Length / 1000).ToString("f3")) m<sup>3</sup>

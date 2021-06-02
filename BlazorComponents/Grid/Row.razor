@@ -8,8 +8,13 @@
             _cellRefs = Grid!.ColumnDefinitions.Select(c => new CellRef(c)).ToList();
         }
     }
-    @foreach (var cellRef in _cellRefs)
-    {
-        <Cell Data="Data" ColumnDef="cellRef.Column!" @key="cellRef" @ref="cellRef.Ref"></Cell>
-    }
+    <CascadingValue IsFixed="true" Value="this">
+        @foreach (var cellRef in _cellRefs)
+        {
+            <Cell ColumnDef="cellRef.Column!" @key="cellRef" @ref="cellRef.Ref"></Cell>
+        }
+    </CascadingValue>
 </div>
+@{ 
+    ShouldRenderFlag = false;
+}
