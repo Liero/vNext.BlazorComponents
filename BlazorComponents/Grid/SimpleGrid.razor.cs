@@ -11,7 +11,7 @@ namespace vNext.BlazorComponents.Grid
     public partial class SimpleGrid<TRow> : ComponentBase, IDisposable
     {
         public static float DefaultRowHeight { get; set; } = 32;
-        public static float DefaultOverscanCount { get; set; } = 10;
+        public static int DefaultOverscanCount { get; set; } = 10;
         protected internal bool ShouldRenderFlag = true;
 
         private string? _gridTemplateColumns;
