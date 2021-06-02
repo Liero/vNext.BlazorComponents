@@ -17,6 +17,7 @@
             <Virtualize @ref="_virtualizeRef"
                         Items="_wrappedItems" 
                         ItemsProvider="@(_wrappedItems == null ? ProvideItems : null)"
+                        ItemSize="RowHeight"
                         OverscanCount="OverscanCount"                        
                         Context="row">
                 <ItemContent>
