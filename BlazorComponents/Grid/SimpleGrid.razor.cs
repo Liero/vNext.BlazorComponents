@@ -78,11 +78,14 @@ namespace vNext.BlazorComponents.Grid
             {
                 if (_selectedItems != value)
                 {
-                    var affectedItems = _selectedItems.Concat(value).Distinct();
+                    var oldSelectedRows = GetVisibleRows().Where(r => r.IsSelected);
+                    var newRows = value.Select(data => FindRow(data));
+                    var affectedRows = oldSelectedRows.Concat(newRows).Distinct().ToArray();
+                    
                     _selectedItems = value;
-                    foreach (var item in affectedItems.Distinct())
+                    foreach (var row in affectedRows)
                     {
-                        FindRow(item)?.Refresh(false);
+                        row?.Refresh(false);
                     }
                 }
             }
