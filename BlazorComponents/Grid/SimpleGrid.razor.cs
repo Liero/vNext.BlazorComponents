@@ -96,8 +96,10 @@ namespace vNext.BlazorComponents.Grid
         #endregion
         internal List<Header<TRow>> Headers { get; } = new List<Header<TRow>>();
 
+        public IEnumerable<ColumnDef<TRow>> VisibleColumns => ColumnDefinitions.Where(c => c.IsVisible);
+
         public string GridTemplateColumns =>
-            _gridTemplateColumns ?? (_gridTemplateColumns = string.Join(' ', ColumnDefinitions.Select(c => c.GridTemplateWidth)));
+            _gridTemplateColumns ?? (_gridTemplateColumns = string.Join(' ', VisibleColumns.Select(c => c.GridTemplateWidth)));
 
         /// <summary>
         /// Returns <see cref="Row{TRow}"/> instances rendered by Virtualize component.
@@ -151,7 +153,7 @@ namespace vNext.BlazorComponents.Grid
             {
                 return null;
             }
-            var colDef = ColumnDefinitions[colIndex];
+            var colDef = VisibleColumns.ElementAt(colIndex);
             var row = _rows.FirstOrDefault(r => r.Index == rowIndex);
             return row?.FindCell(colDef);
         }
@@ -180,15 +182,16 @@ namespace vNext.BlazorComponents.Grid
         {
             await InvokeAsync(() =>
             {
+                var visibleColumns = VisibleColumns.ToArray();
                 for (int i = 0; i < columnWidths.Length; i++)
                 {
-                    ColumnDefinitions[i].ActualWidth = columnWidths[i];
+                    visibleColumns[i].ActualWidth = columnWidths[i];
                 }
 
                 //frozen columns have style.left= calculated, which must be refreshed.  Dynamic css classIt would be nicer though
                 for (int i = columnIndex + 1; i <= FrozenColumns; i++)
                 {
-                    var column = ColumnDefinitions[i];
+                    var column = visibleColumns[i];
                     column.Invalidate();
                     Headers.Find(h => h.ColumnDef == column)?.Refresh();
                     foreach (var row in _rows)

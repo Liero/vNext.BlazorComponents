@@ -47,13 +47,13 @@ namespace vNext.BlazorComponents.Grid
                 result += defaultColumn.HeaderClass;
             }
 
-            if (defaultColumn?.HeaderClassSelector != null)
-            {
-                result += " " + defaultColumn.HeaderClassSelector(ColumnDef);
-            }
-            else if (ColumnDef.HeaderClassSelector != null)
+            if (ColumnDef.HeaderClassSelector != null)
             {
                 result += " " + ColumnDef.HeaderClassSelector(ColumnDef);
+            }
+            else if (defaultColumn?.HeaderClassSelector != null)
+            {
+                result += " " + defaultColumn.HeaderClassSelector(ColumnDef);
             }
             return result;
         }

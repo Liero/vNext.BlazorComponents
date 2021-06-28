@@ -21,8 +21,7 @@
 
         <SimpleGrid TRow="Product" Items="_products" style="height: 100%" FrozenColumns="2"
                     OnRowClick="OnRowClick" OnRowContextMenu="OnRowContextMenu"
-                    @ref="_grid"
-                    @key="_moreColumns">
+                    @ref="_grid">
             <ColumnDef TRow="Product" Header="Id" Width="3em">
                 @{ Console.WriteLine("ID"); }
                 @context.Id
@@ -44,15 +43,12 @@
                 @((context.Volume / 1000).ToString("f3")) m<sup>3</sup>
             </ColumnDef>
 
-            @if (_moreColumns)
-            {
-                <ColumnDef TRow="Product" Header="Truncated text" CellClass="text-truncate" Width="200px">
-                    <span class="text-truncate">some very looooooooooooooooooooooooong teeeeeeeeeeeeeeeeeeeeeeeeeeeeeext</span>
-                </ColumnDef>
-                <ColumnDef TRow="Product" Header="Long Text" Width="max-content">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                </ColumnDef>
-            }
+            <ColumnDef TRow="Product" Header="Truncated text" CellClass="text-truncate" Width="200px" IsVisible="_moreColumns">
+                <span class="text-truncate">some very looooooooooooooooooooooooong teeeeeeeeeeeeeeeeeeeeeeeeeeeeeext</span>
+            </ColumnDef>
+            <ColumnDef TRow="Product" Header="Long Text" Width="max-content" IsVisible="_moreColumns">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+            </ColumnDef>
         </SimpleGrid>
 
 
@@ -93,15 +89,13 @@
     void MoreColumnsChanged(ChangeEventArgs args)
     {
         _moreColumns = (bool)args.Value;
+        _grid.Refresh(refreshCells: false);
     }
 
     void OnFieldChanged(object sender, FieldChangedEventArgs args)
     {
-        Console.WriteLine("FieldCanged");
         if (args.FieldIdentifier.Model is Product product)
         {
-            _grid.FindRow(product)?.Refresh();
-            _grid.FindRow(product)?.Refresh();
             _grid.FindRow(product)?.Refresh();
         }
     }

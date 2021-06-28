@@ -9,7 +9,7 @@
         }
     }
     <CascadingValue IsFixed="true" Value="this">
-        @foreach (var cellRef in _cellRefs)
+        @foreach (var cellRef in _cellRefs.Where(c => c.Column.IsVisible))
         {
             <Cell ColumnDef="cellRef.Column!" @key="cellRef" @ref="cellRef.Ref"></Cell>
         }
