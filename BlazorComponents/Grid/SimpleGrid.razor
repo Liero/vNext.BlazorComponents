@@ -7,7 +7,7 @@
         <div class="simple-grid @CssClass" style="grid-template-columns: @GridTemplateColumns;">
             <div class="sg-header">
                 @{int i = 0;}
-                @foreach (var col in ColumnDefinitions)
+                @foreach (var col in VisibleColumns)
                 {
                     col.Index = i++;
                     col.IsFrozen = col.Index < FrozenColumns;

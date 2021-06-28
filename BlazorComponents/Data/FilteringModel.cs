@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -99,7 +100,7 @@ namespace vNext.BlazorComponents.Data
             {
                 if (!string.IsNullOrEmpty(value))
                 {
-                    var propertyLambda = FieldUtils.CreatePropertyLambda(typeof(TItem), value);
+                    var propertyLambda = GetPropertyLambda(value);
                     SelectedFieldClrType = propertyLambda.ReturnType;
                 }
                 base.SelectedField = value;
@@ -111,6 +112,11 @@ namespace vNext.BlazorComponents.Data
                     }
                 }
             }
+        }
+
+        protected virtual LambdaExpression GetPropertyLambda(string field)
+        {
+            return FieldUtils.CreatePropertyLambda(typeof(TItem), field);
         }
 
         public override IEnumerable<string> GetOperators(string field)

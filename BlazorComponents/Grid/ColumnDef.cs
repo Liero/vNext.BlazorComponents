@@ -10,10 +10,25 @@ namespace vNext.BlazorComponents.Grid
     public class ColumnDef<TRow> : ComponentBase
     {
         private string? _frozenLeft;
+        private bool _isVisible = true;
 
         [CascadingParameter(Name = "Grid")] internal SimpleGrid<TRow>? Grid { get; set; }
 
         [Parameter] public bool IsDefault { get; set; }
+
+        [Parameter]
+        public bool IsVisible
+        {
+            get => _isVisible;
+            set
+            {
+                if (_isVisible != value)
+                {
+                    _isVisible = value;
+                    Grid?.Invalidate(invalidateCells: false);
+                }
+            }
+        }
         [Parameter] public string? Field { get; set; }
 
         [Parameter] public string? Header { get; set; }
@@ -50,7 +65,7 @@ namespace vNext.BlazorComponents.Grid
                     }
                     else
                     {
-                        var widths = Grid!.ColumnDefinitions
+                        var widths = Grid!.VisibleColumns
                             .TakeWhile(c => c != this)
                             .Select(c => c.GridTemplateWidth);
                         _frozenLeft = $"left: calc({string.Join(" + ", widths)});";

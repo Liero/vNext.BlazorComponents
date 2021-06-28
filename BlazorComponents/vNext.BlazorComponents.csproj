@@ -6,7 +6,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Daniel Turan</Authors>
     <Company>vNext Software Consulting</Company>
-    <Version>0.5.2.1</Version>
+    <Version>0.5.2.2</Version>
     <PackageTags>Blazor DataGrid</PackageTags>
     <Description>High performace UI components for Blazor
  * SimpleGrid - virtualized datagrid with manual data operation, virtual and infinite scrolling
@@ -39,8 +39,8 @@ Selection
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <DebugType>embedded</DebugType>
-    <AssemblyVersion>0.5.2.1</AssemblyVersion>
-    <FileVersion>0.5.2.1</FileVersion>
+    <AssemblyVersion>0.5.2.2</AssemblyVersion>
+    <FileVersion>0.5.2.2</FileVersion>
   </PropertyGroup>  
   
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
