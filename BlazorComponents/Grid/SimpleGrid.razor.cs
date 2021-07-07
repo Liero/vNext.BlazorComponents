@@ -146,7 +146,11 @@ namespace vNext.BlazorComponents.Grid
 
         public async Task<Cell<TRow>?> GetCellFromPoint(double clientX, double clientY)
         {
-            var result = await JS.InvokeAsync<int[]>("vNext.SimpleGrid.getCellFromPoint", new { clientX, clientY });
+            var result = await JS.InvokeAsync<int[]?>("vNext.SimpleGrid.getCellFromPoint", new { clientX, clientY });
+            if (result == null)
+            {
+                return null;
+            }
             int colIndex = result[0];
             int rowIndex = result[1];
             if (colIndex < 0)
