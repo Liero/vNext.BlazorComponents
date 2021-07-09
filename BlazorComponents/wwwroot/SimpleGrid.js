@@ -31,6 +31,11 @@ var vNext;
                     evt.preventDefault()
                 }
             });
+
+            //workaround to fix https://github.com/dotnet/aspnetcore/issues/34060
+            elementRef.addEventListener('scroll', evt => {
+                elementRef.style.height = elementRef.offsetHeight + 'px';
+            });
             /** @type HTMLElement */
             this.gridElement = elementRef.firstChild
         }
@@ -80,7 +85,7 @@ var vNext;
         static getCellFromPoint({ clientX, clientY }) {
             const cell = document.elementsFromPoint(clientX, clientY).find(e => e.matches('.sg-cell'));
             if (!cell) {
-                return -1;
+                return null;
             }
             const colIndex = Array.prototype.indexOf.call(cell.parentNode.children, cell);
             const rowIndex = +cell.parentElement.getAttribute('data-row-index');
