@@ -4,7 +4,9 @@
     @ChildContent
 
     <div class="sg-container @(@class)" @attributes="AdditionalAttributes" @ref="_elementRef">
-        <div class="simple-grid @CssClass" style="grid-template-columns: @GridTemplateColumns;">
+        <div class="simple-grid @CssClass" 
+             style="grid-template-columns: @GridTemplateColumns;" 
+             tabindex="-1">
             <div class="sg-header">
                 @{int i = 0;}
                 @foreach (var col in VisibleColumns)

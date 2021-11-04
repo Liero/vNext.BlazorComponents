@@ -11,6 +11,7 @@ $table-border-color: #f3f2f1 !default;
     overflow: auto;
     flex-grow: 1;
     align-content: start;
+    outline: none;
     --sg-grid-hover-bg: #{$table-hover-bg};
     --sg-grid-hover-color: #{$table-hover-color};
     --sg-grid-selected-bg: #{$table-selected-bg};
