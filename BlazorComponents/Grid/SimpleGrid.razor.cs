@@ -162,6 +162,12 @@ namespace vNext.BlazorComponents.Grid
             return row?.FindCell(colDef);
         }
 
+        public async Task ScrollToIndex(int index, bool smooth = true)
+        {
+            if (_jsApi == null) throw new InvalidOperationException("JS Api not initalized");
+            await _jsApi.InvokeVoidAsync("scrollToIndex", index, smooth ? "smooth" : null);
+        }
+
         public IEnumerable<Header<TRow>> GetHeaders() => Headers;
 
         public Row<TRow>? FindRow(TRow row) => _rows.FirstOrDefault(r => Object.Equals(r.Data, row));

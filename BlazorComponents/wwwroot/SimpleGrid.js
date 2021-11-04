@@ -71,6 +71,14 @@ var vNext;
             document.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); }, { once: true, capture: true });
         }
 
+        scrollToIndex(index, behavior) {
+            var rowHeight = this.elementRef.querySelector('.sg-cell').offsetHeight;
+            this.elementRef.querySelector('.simple-grid').scrollTo({
+                behavior: behavior || 'smooth',
+                top: index * rowHeight,
+            });
+        }
+
         static init(elementRef, dotNetRef) {
             return new SimpleGrid(elementRef, dotNetRef)
         }
