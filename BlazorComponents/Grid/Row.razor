@@ -1,5 +1,5 @@
 ﻿@typeparam TRow
-<div class="sg-row @ResolveCssClass()" 
+<div class="@ResolveCssClass()" 
      @onclick="OnClick" data-row-index="@Index"
      @oncontextmenu="OnContextMenu" @oncontextmenu:preventDefault="Grid!.OnRowContextMenu.HasDelegate">
     @{ 

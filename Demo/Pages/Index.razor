@@ -54,6 +54,7 @@
 
     </div>
     <button type="button" @onclick="Reload">Reload</button>
+    <label>Scroll To Index<input type="number" @onchange="ScrollToIndexChanged" /></label>
     <label><input type="checkbox" @onchange="MoreColumnsChanged" /> Show more columns</label>
     <ValidationSummary />
 
@@ -107,5 +108,13 @@
     void OnRowContextMenu(RowMouseEventArgs<Product> args)
     {
         _rightClickedRow = (Product)args.Data;
+    }
+
+    async Task ScrollToIndexChanged(ChangeEventArgs args)
+    {
+        if (int.TryParse((string)args.Value, out int index))
+        {
+            await _grid.ScrollToIndex(index);
+        }
     }
 }
