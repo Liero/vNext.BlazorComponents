@@ -41,6 +41,7 @@ $table-border-color: #f3f2f1 !default;
     border-bottom: solid 1px;
     border-color: #f3f2f1;
     overflow: hidden;
+    box-sizing: border-box;
 }
 
 .sg-placeholder {

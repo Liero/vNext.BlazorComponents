@@ -23,11 +23,11 @@
                         OverscanCount="OverscanCount"                        
                         Context="row">
                 <ItemContent>
-                    <Row Data="row.Row" Index="row.Index" @key="row.Row" />
+                    <Row Data="row.Row" Index="row.Index" @key="row.Index" />
                 </ItemContent>
                 <Placeholder>
-                    <div class="sg-row">
-                        <div class="sg-cell sg-placeholder" />
+                    <div class="sg-row" @key="row.Index">
+                        <div class="sg-cell sg-placeholder"></div>
                     </div>
                 </Placeholder>
             </Virtualize>
