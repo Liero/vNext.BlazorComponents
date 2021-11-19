@@ -95,9 +95,24 @@ namespace vNext.BlazorComponents.Data
         public static Expression<Func<TItem, bool>> CreatePredicateLambda<TItem>(this LambdaExpression fieldExpression, string @operator, object? value)
             => (Expression<Func<TItem, bool>>)CreatePredicateLambda(fieldExpression, @operator, value);
 
+        public static Expression<Func<TItem, bool>> Not<TItem>(this Expression<Func<TItem, bool>> predicate)
+        {
+            return Expression.Lambda<Func<TItem, bool>>(
+                Expression.Not(predicate.Body),
+                predicate.Parameters);
+        }
+
         public static LambdaExpression CreatePredicateLambda(this LambdaExpression fieldExpression, string @operator, object? value)
         {
             Expression propertyExp = fieldExpression.Body;
+            string operatorBase = @operator;
+            bool negate = false;
+            const string negatePrefix = "not ";
+            if (operatorBase.StartsWith(negatePrefix))
+            {
+                operatorBase = operatorBase.Substring(negatePrefix.Length);
+                negate = true;
+            }
             Expression predicateBody = @operator switch
             {
                 "==" or "equals" => Expression.Equal(propertyExp, Expression.Constant(value, fieldExpression.ReturnType)),
@@ -116,6 +131,10 @@ namespace vNext.BlazorComponents.Data
                     Expression.Constant(value ?? "")),
                 _ => throw new ArgumentOutOfRangeException($"Operator '{@operator}' not supported", nameof(@operator))
             };
+            if (negate)
+            {
+                predicateBody = Expression.Not(predicateBody);
+            }
             return Expression.Lambda(predicateBody, fieldExpression.Parameters);
         }
 
