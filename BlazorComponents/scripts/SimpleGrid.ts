@@ -1,17 +1,15 @@
-"use strict";
-var vNext;
-(function (vNext) {
-    class SimpleGrid {
-        /** 
-         *  @param { HTMLDivElement } elementRef
-         */
-        constructor(elementRef, dotNetRef) {
-            this.elementRef = elementRef;
-            this.dotNetRef = dotNetRef;
+/// <reference path="Virtualize6.ts" />
+namespace vNext {
+    export class SimpleGrid {
+        gridElement: HTMLElement;
+
+        constructor(
+            public elementRef: HTMLDivElement,
+            private dotNetRef: any) {
 
             elementRef.addEventListener('mousedown', evt => {
                 /** @type HTMLElement */
-                var target = evt.target;
+                var target = evt.target as HTMLElement;
                 if (target.matches('.sg-header-cell-resize')) {
                     evt.stopPropagation();
                     this.startResize(evt);
@@ -20,7 +18,7 @@ var vNext;
                     if (target.matches('input')) {
                         target.focus();
                     }
-                    function cancelSelection(evt2) {
+                    const cancelSelection = (evt2: Event) => {
                         evt2.preventDefault();
                     }
                     elementRef.addEventListener('selectstart', cancelSelection);
@@ -36,20 +34,17 @@ var vNext;
             elementRef.addEventListener('scroll', evt => {
                 elementRef.style.height = elementRef.offsetHeight + 'px';
             });
-            /** @type HTMLElement */
-            this.gridElement = elementRef.firstChild
+
+            this.gridElement = elementRef.firstChild as HTMLElement;
         }
 
-        /**
-         * @param {MouseEvent} evt
-         */
-        startResize(evt) {
+        private startResize(evt: MouseEvent) {
             /** @type HTMLElement */
-            var dragHandle = evt.target;
+            var dragHandle = evt.target as HTMLElement;
             const x = evt.clientX;
             /** @type HTMLElement */
-            const colElem = dragHandle.closest('.sg-header-cell');
-            var columns = [...colElem.parentElement.children];
+            const colElem = dragHandle.closest<HTMLElement>('.sg-header-cell');
+            var columns = Array.from(colElem.parentElement.children) as HTMLElement[];
             const colIndex = columns.indexOf(colElem);
             const initialWidth = colElem.offsetWidth;
             let columnWidths = columns.map(c => c.offsetWidth);
@@ -72,7 +67,7 @@ var vNext;
         }
 
         scrollToIndex(index, behavior) {
-            var rowHeight = this.elementRef.querySelector('.sg-cell').offsetHeight;
+            var rowHeight = this.elementRef.querySelector<HTMLElement>('.sg-cell').offsetHeight;
             this.elementRef.querySelector('.simple-grid').scrollTo({
                 behavior: behavior || 'smooth',
                 top: index * rowHeight,
@@ -100,6 +95,4 @@ var vNext;
             return [colIndex, rowIndex];
         }
     }
-
-    vNext.SimpleGrid = SimpleGrid;
-})(vNext || (vNext = {}));
+}
