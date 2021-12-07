@@ -165,7 +165,7 @@ namespace vNext.BlazorComponents.Grid
         public async Task ScrollToIndex(int index, bool smooth = true)
         {
             if (_jsApi == null) throw new InvalidOperationException("JS Api not initalized");
-            await _jsApi.InvokeVoidAsync("scrollToIndex", index, smooth ? "smooth" : null);
+            await _jsApi.InvokeVoidAsync("scrollToIndex", index, smooth ? "smooth" : "auto");
         }
 
         public IEnumerable<Header<TRow>> GetHeaders() => Headers;
