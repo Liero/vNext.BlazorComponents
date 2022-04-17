@@ -42,6 +42,10 @@ $table-border-color: #f3f2f1 !default;
     border-color: #f3f2f1;
     overflow: hidden;
     box-sizing: border-box;
+    &:focus {
+        outline: dashed 1px black;
+        outline-offset: -1px;
+    }
 }
 
 .sg-placeholder {
