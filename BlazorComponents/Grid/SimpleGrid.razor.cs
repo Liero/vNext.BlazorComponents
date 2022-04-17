@@ -4,6 +4,7 @@ using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace vNext.BlazorComponents.Grid
@@ -65,7 +66,9 @@ namespace vNext.BlazorComponents.Grid
         [Parameter] public EventCallback<ReadEventArgs<TRow>> OnRead { get; set; }
         [Parameter] public EventCallback<RowMouseEventArgs<TRow>> OnRowClick { get; set; }
         [Parameter] public EventCallback<RowMouseEventArgs<TRow>> OnRowContextMenu { get; set; }
+        [Parameter] public EventCallback<RowKeyboardEventArgs<TRow>> OnRowKeyPress { get; set; }
         [Parameter] public EventCallback<HeaderMouseEventArgs<TRow>> OnHeaderClick { get; set; }
+        [Parameter] public EventCallback<RowDeleteEventArgs<TRow>> OnRowDelete { get; set; }
 
 
         [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes { get; set; }
@@ -240,6 +243,21 @@ namespace vNext.BlazorComponents.Grid
             return new ItemsProviderResult<RowWrapper>(refs, args.Total.GetValueOrDefault());
         }
 
+        protected virtual async Task CustomEventOnChange(ChangeEventArgs args)
+        {
+            if (args.Value is not string str) return;
+            var evt = JsonSerializer.Deserialize<CustomEvent>(str, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            if (evt == null) return;
+
+            var row = _rows?.FirstOrDefault(e => e.Index == evt.RowIndex);
+            if (row == null) return;
+
+            if (evt.Name == "Delete")
+            {
+                await OnRowDelete.InvokeAsync(new RowDeleteEventArgs<TRow>(row));
+            }
+        }
+
         void IDisposable.Dispose()
         {
             _dotNetRef?.Dispose();
@@ -250,5 +268,14 @@ namespace vNext.BlazorComponents.Grid
         /// just to keep index of the row
         /// </summary>
         protected record RowWrapper(int Index, TRow Row);
+
+        private class CustomEvent
+        {
+            public string Name { get; set; } = default!;            
+            public int? RowIndex { get; set; }
+            public int? ColIndex { get; set; }
+        }
     }
+
+ 
 }

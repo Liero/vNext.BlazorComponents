@@ -4,7 +4,8 @@
     @ChildContent
 
     <div class="sg-container @(@class)" @attributes="AdditionalAttributes" @ref="_elementRef">
-        <div class="simple-grid @CssClass" 
+        <input type="hidden" style="display:none" @onchange="CustomEventOnChange"/>
+        <div class="simple-grid @CssClass" role="grid"
              style="grid-template-columns: @GridTemplateColumns;" 
              tabindex="-1">
             <div class="sg-header">

@@ -49,6 +49,9 @@ namespace vNext.BlazorComponents.Grid
         protected virtual Task OnContextMenu(MouseEventArgs mouseEvent) =>
             Grid!.OnRowContextMenu.InvokeAsync(new RowMouseEventArgs<TRow>(this, mouseEvent));
 
+        protected virtual Task OnKeyPress(KeyboardEventArgs keyboardEvent) =>
+            Grid!.OnRowKeyPress.InvokeAsync(new RowKeyboardEventArgs<TRow>(this, keyboardEvent));
+
         private string ResolveCssClass()
         {
             string result = "sg-row ";

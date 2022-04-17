@@ -1,6 +1,7 @@
 ﻿@typeparam TRow
-<div class="@ResolveCssClass()" 
+<div class="@ResolveCssClass()" role="row"
      @onclick="OnClick" data-row-index="@Index"
+     @onkeypress="OnKeyPress"
      @oncontextmenu="OnContextMenu" @oncontextmenu:preventDefault="Grid!.OnRowContextMenu.HasDelegate">
     @{ 
         if (_cellRefs == null)

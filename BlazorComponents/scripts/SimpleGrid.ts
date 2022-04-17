@@ -1,7 +1,7 @@
-/// <reference path="Virtualize6.ts" />
 namespace vNext {
     export class SimpleGrid {
         gridElement: HTMLElement;
+        customEvent: HTMLInputElement;
 
         constructor(
             public elementRef: HTMLDivElement,
@@ -35,7 +35,66 @@ namespace vNext {
                 elementRef.style.height = elementRef.offsetHeight + 'px';
             });
 
-            this.gridElement = elementRef.firstChild as HTMLElement;
+            this.customEvent = elementRef.querySelector('input[type=\'hidden\']');
+            this.gridElement = elementRef.querySelector('.simple-grid') as HTMLElement;
+            this.gridElement.addEventListener('focusout', evt => {
+                var target = evt.target as Element;
+                if (this.isCell(target)) {
+                    target.setAttribute('tabindex', '-1');
+                }
+            });
+            this.gridElement.addEventListener('focusin', evt => {
+                var target = evt.target as Element;
+                if (this.isCell(target)) {
+                    target.setAttribute('tabindex', '0');
+                }
+            });
+            this.gridElement.addEventListener('click', event => {
+                var target = event.target as HTMLElement;
+                if (!this.isCell(target)) return;
+                target.focus();
+            });
+            this.gridElement.addEventListener('keypress', event => {
+                var target = event.target as HTMLElement;
+                if (!this.isCell(target) || event.shiftKey || event.ctrlKey || event.altKey) return;
+                switch (event.key) {
+                    case "Delete":
+                        event.preventDefault();
+                        break;
+                }
+            }, { capture: true });
+            this.gridElement.addEventListener('keydown', event => {
+                var target = event.target as HTMLElement;
+                if (!this.isCell(target) || event.shiftKey || event.ctrlKey || event.altKey) return;
+                switch (event.key) {
+                    case "ArrowRight":
+                        this.moveFocus(1, 0);
+                        break;
+                    case "ArrowLeft":
+                        this.moveFocus(-1, 0);
+                        break;
+                    case "ArrowDown":
+                        this.moveFocus(0, 1);
+                        break;
+                    case "ArrowUp":
+                        this.moveFocus(0, -1);
+                        break;
+                    case " ":
+                        target.click();
+                        break;
+                    case "Enter":
+                        (target.firstElementChild instanceof HTMLElement ? target.firstElementChild : target).click();
+                        break;                    
+                    case "Delete":
+                        this.customEvent.value = JSON.stringify({ name: 'Delete', ...SimpleGrid.getCellIndex(target) });
+                        this.customEvent.dispatchEvent(new CustomEvent<Event>('change', { bubbles: true }));
+                        break;
+                    default:
+                        return;
+                }
+                event.stopPropagation();
+                event.preventDefault();
+            })
         }
 
         private startResize(evt: MouseEvent) {
@@ -74,6 +133,21 @@ namespace vNext {
             });
         }
 
+        moveFocus(horizontal: number, vertical: number) {
+            if (!this.isCell(document.activeElement)) {
+                return;
+            }
+            var pos = SimpleGrid.getCellIndex(document.activeElement);
+            pos.colIndex += horizontal;
+            pos.rowIndex += vertical;
+            var newCell = this.gridElement.querySelector<HTMLElement>(`.sg-row[data-row-index=\'${pos.rowIndex}\']>:nth-child(${pos.colIndex + 1})`);
+            newCell?.focus();
+        }
+
+        isCell(element: Element) {
+            return element.matches('.sg-cell') || element?.parentElement.parentElement == this.gridElement;
+        }
+
         static init(elementRef, dotNetRef) {
             return new SimpleGrid(elementRef, dotNetRef)
         }
@@ -83,16 +157,25 @@ namespace vNext {
          * @param {Object} args - Typically a MouseEvent.
          * @param {number} args.clientX
          * @param {number} args.clientY
-         * @returns {Array<Number>}
          */
         static getCellFromPoint({ clientX, clientY }) {
             const cell = document.elementsFromPoint(clientX, clientY).find(e => e.matches('.sg-cell'));
             if (!cell) {
                 return null;
             }
-            const colIndex = Array.prototype.indexOf.call(cell.parentNode.children, cell);
-            const rowIndex = +cell.parentElement.getAttribute('data-row-index');
+            var { colIndex, rowIndex } = SimpleGrid.getCellIndex(cell);
             return [colIndex, rowIndex];
+        }
+
+        /**
+         * @param cell must be  '.sg-cell'
+         */
+        private static getCellIndex(cell: Element)
+            : { colIndex: number, rowIndex: number }
+        {
+            const colIndex: number = Array.prototype.indexOf.call(cell.parentNode.children, cell);
+            const rowIndex: number = +cell.parentElement.getAttribute('data-row-index');
+            return { colIndex, rowIndex };
         }
     }
 }
