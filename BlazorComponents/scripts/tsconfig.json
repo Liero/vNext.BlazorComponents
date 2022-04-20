@@ -6,9 +6,6 @@
     "removeComments": false,
     "sourceMap": true,
     "target": "ES2015",
-    "outDir": "wwwroot"
-  },
-  "include": [
-    "scripts/**/*"
-  ]
+    "outDir": "../wwwroot"
+  }  
 }

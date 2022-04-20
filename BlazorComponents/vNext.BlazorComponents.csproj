@@ -56,7 +56,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.0" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="all" />
+	<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.6.4">
+		<PrivateAssets>all</PrivateAssets>
+		<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	</PackageReference>
   </ItemGroup>
 
   <Target Name="CompileStaticAssets" AfterTargets="AfterBuild">
@@ -80,4 +84,5 @@
     <SupportedPlatform Include="browser" />
   </ItemGroup>
 
+  
 </Project>
