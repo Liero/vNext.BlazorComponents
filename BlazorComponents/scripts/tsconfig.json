@@ -1,5 +1,5 @@
 {
-  "compileOnSave": true,  
+  "compileOnSave": true,
   "compilerOptions": {
     "noImplicitAny": false,
     "noEmitOnError": true,
@@ -7,5 +7,6 @@
     "sourceMap": true,
     "target": "ES2015",
     "outDir": "../wwwroot"
-  }  
+  }
+  
 }
