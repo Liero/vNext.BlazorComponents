@@ -38,9 +38,30 @@ namespace vNext {
             this.customEvent = elementRef.querySelector('input[type=\'hidden\']');
             this.gridElement = elementRef.querySelector('.simple-grid') as HTMLElement;
             this.gridElement.addEventListener('focusout', evt => {
-                var target = evt.target as Element;
+                var target = evt.target as HTMLElement;
                 if (this.isCell(target)) {
                     target.setAttribute('tabindex', '-1');
+
+                    //try to maintain focus on virtual scrolling
+                    if (document.activeElement == document.body) {
+                        const pos = SimpleGrid.getCellIndex(target);
+                        const rowChildIndex = Array.prototype.indexOf.call(target.parentElement.children, target);
+                        setTimeout(() => {
+                            if (document.activeElement != document.body) {
+                                return;
+                            }
+                            if (target.isConnected) {
+                                target.focus({ preventScroll: true });
+                            }
+                            else {
+                                const newCell = this.gridElement.querySelector<HTMLElement>(`.sg-row[data-row-index=\'${pos.rowIndex}\']>:nth-child(${pos.colIndex + 1})`)
+                                    || this.gridElement.querySelector<HTMLElement>(`.sg-row[data-row-index]:nth-child(${rowChildIndex})>:nth-child(${pos.colIndex + 1})`)
+                                    || this.gridElement.querySelector<HTMLElement>(`.sg-row[data-row-index]>:first-child`);
+
+                                (newCell || this.gridElement).focus({ preventScroll: true });
+                            }
+                        }, 0);
+                    }
                 }
             });
             this.gridElement.addEventListener('focusin', evt => {
@@ -65,7 +86,9 @@ namespace vNext {
             }, { capture: true });
             this.gridElement.addEventListener('keydown', event => {
                 var target = event.target as HTMLElement;
-                if (!this.isCell(target) || event.shiftKey || event.ctrlKey || event.altKey) return;
+                if (event.shiftKey || event.ctrlKey || event.altKey) return;
+                if (!this.isCell(target) && target != this.gridElement) return;
+
                 switch (event.key) {
                     case "ArrowRight":
                         this.moveFocus(1, 0);
@@ -84,7 +107,7 @@ namespace vNext {
                         break;
                     case "Enter":
                         (target.firstElementChild instanceof HTMLElement ? target.firstElementChild : target).click();
-                        break;                    
+                        break;
                     case "Delete":
                         this.customEvent.value = JSON.stringify({ name: 'Delete', ...SimpleGrid.getCellIndex(target) });
                         this.customEvent.dispatchEvent(new CustomEvent<Event>('change', { bubbles: true }));
@@ -171,8 +194,7 @@ namespace vNext {
          * @param cell must be  '.sg-cell'
          */
         private static getCellIndex(cell: Element)
-            : { colIndex: number, rowIndex: number }
-        {
+            : { colIndex: number, rowIndex: number } {
             const colIndex: number = Array.prototype.indexOf.call(cell.parentNode.children, cell);
             const rowIndex: number = +cell.parentElement.getAttribute('data-row-index');
             return { colIndex, rowIndex };
