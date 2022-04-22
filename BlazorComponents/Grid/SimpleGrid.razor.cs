@@ -122,7 +122,7 @@ namespace vNext.BlazorComponents.Grid
 
             foreach (var row in _rows)
             {
-                row.Refresh(invalidateCells);
+                row.Invalidate(invalidateCells);
             }
         }
 
@@ -139,12 +139,11 @@ namespace vNext.BlazorComponents.Grid
         /// </summary>
         public async Task ReloadAsync()
         {
-            Invalidate(true);
             if (_virtualizeRef != null)
             {
                 await _virtualizeRef.RefreshDataAsync();
             }
-            StateHasChanged();
+            Refresh(true);
         }
 
         public async Task<Cell<TRow>?> GetCellFromPoint(double clientX, double clientY)
