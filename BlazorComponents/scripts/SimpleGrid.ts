@@ -37,6 +37,7 @@ namespace vNext {
 
             this.customEvent = elementRef.querySelector('input[type=\'hidden\']');
             this.gridElement = elementRef.querySelector('.simple-grid') as HTMLElement;
+
             this.gridElement.addEventListener('focusout', evt => {
                 var target = evt.target as HTMLElement;
                 if (this.isCell(target)) {
@@ -47,7 +48,7 @@ namespace vNext {
                         const pos = SimpleGrid.getCellIndex(target);
                         const rowChildIndex = Array.prototype.indexOf.call(target.parentElement.children, target);
                         setTimeout(() => {
-                            if (document.activeElement != document.body) {
+                            if (document.activeElement != document.body || !this.isVisible()) {
                                 return;
                             }
                             if (target.isConnected) {
@@ -118,6 +119,10 @@ namespace vNext {
                 event.stopPropagation();
                 event.preventDefault();
             })
+        }
+
+        private isVisible(): boolean {
+            return this.gridElement.clientHeight > 0;
         }
 
         private startResize(evt: MouseEvent) {

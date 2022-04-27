@@ -30,6 +30,7 @@ namespace vNext.BlazorComponents.Grid
         [Inject] protected IJSRuntime JS { get; set; } = default!;
 
         [Parameter] public string? @class { get; set;}
+        [Parameter] public bool CellNavigation { get; set; }
 
         [Parameter]
         public ICollection<TRow>? Items

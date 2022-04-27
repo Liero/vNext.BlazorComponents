@@ -1,6 +1,6 @@
 ﻿@typeparam TRow
 <CascadingValue IsFixed="true" Value="this">
-    <div class="@ResolveCssClass()" style="@ColumnDef.FrozenLeft" @key="ColumnDef" tabindex="-1" role="cell">@ColumnDef.ChildContent?.Invoke(Data)</div>
+    <div class="@ResolveCssClass()" style="@ColumnDef.FrozenLeft" @key="ColumnDef" tabindex="@(this.ColumnDef.Grid!.CellNavigation ? "-1": null)" role="cell">@ColumnDef.ChildContent?.Invoke(Data)</div>
 </CascadingValue>
 @{
     ShouldRenderFlag = false;
