@@ -39,6 +39,7 @@ namespace vNext.BlazorComponents.Grid
         [Parameter] public RenderFragment<TRow>? ChildContent { get; set; }
 
         [Parameter] public string? Width { get; set; }
+        [Parameter] public float? Order { get; set; }
 
         [Parameter] public string? CellClass { get; set; }
 
@@ -84,6 +85,7 @@ namespace vNext.BlazorComponents.Grid
 
         protected override void OnInitialized()
         {
+            Order ??= Grid?.ColumnDefinitions.Count + 1;
             Grid?.AddColumnDefinition(this);
             Grid?.Refresh();
         }

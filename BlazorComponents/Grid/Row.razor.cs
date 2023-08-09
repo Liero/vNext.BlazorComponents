@@ -11,7 +11,7 @@ namespace vNext.BlazorComponents.Grid
     {
         protected internal bool ShouldRenderFlag = true;
         private List<CellRef>? _cellRefs;
-
+        private bool _cellRefsInvalid = true;
         [Parameter] public TRow? Data { get; set; }
         [Parameter] public int Index { get; set; }
         [CascadingParameter(Name = "Grid")] public SimpleGrid<TRow>? Grid { get; set; }
@@ -23,6 +23,7 @@ namespace vNext.BlazorComponents.Grid
             ShouldRenderFlag = true;
             if (invalidateCells && _cellRefs != null)
             {
+                _cellRefsInvalid = true;
                 _cellRefs.ForEach(c => c.Ref?.Invalidate());
             }
             //clear all precalulated assets here

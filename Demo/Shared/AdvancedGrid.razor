@@ -10,6 +10,7 @@
     <Item OnClick="FilteringModel.Descriptors.Clear">Clear filters</Item>
     <Item OnClick="args => FilterByCell(((Cell<TRow>)args.Data).Data, ((Cell<TRow>)args.Data).ColumnDef)">Filter to this</Item>
     <Item OnClick="@(args => FilterByCell(((Cell<TRow>)args.Data).Data, ((Cell<TRow>)args.Data).ColumnDef, "!="))">Filter except this</Item>
+    <Item OnClick="@(args => ReorderColumm(((Cell<TRow>)args.Data).ColumnDef))">Set Column Order</Item>
 </ContextMenu>
 
 <div @attributes="AdditionalAttributes"
@@ -210,6 +211,18 @@
             var cellValue = ex.ValueGetter(data);
             FilteringModel.Descriptors.Add(new FieldFilterDescriptor(columnDef.Field, @operator, cellValue));
         }
+    }
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "BL0005:Component Parameter shouhld not be set outside component", Justification = "Not databound here")]
+    public async Task ReorderColumm(ColumnDef<TRow> columnDef)
+    {
+        string userResponse = await Js.InvokeAsync<string>("prompt", "", columnDef.Order);
+        if (float.TryParse(userResponse, out var val))
+        {
+            columnDef.Order = val;
+        }
+        this.StateHasChanged();
+        _simpleGrid.Refresh();
     }
 
     public void ShowCustomFilterUI(ColumnDef<TRow> columnDef)

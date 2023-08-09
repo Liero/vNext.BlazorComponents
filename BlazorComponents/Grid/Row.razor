@@ -3,14 +3,15 @@
      @onclick="OnClick" data-row-index="@Index"
      @onkeypress="OnKeyPress"
      @oncontextmenu="OnContextMenu" @oncontextmenu:preventDefault="Grid!.OnRowContextMenu.HasDelegate">
-    @{ 
-        if (_cellRefs == null)
+    @{
+        if (_cellRefs == null || _cellRefsInvalid)
         {
-            _cellRefs = Grid!.ColumnDefinitions.Select(c => new CellRef(c)).ToList();
+            _cellRefs = Grid!.VisibleColumns.Select(c => new CellRef(c)).ToList();
+            _cellRefsInvalid = false;
         }
     }
     <CascadingValue IsFixed="true" Value="this">
-        @foreach (var cellRef in _cellRefs.Where(c => c.Column.IsVisible))
+        @foreach (var cellRef in _cellRefs)
         {
             <Cell ColumnDef="cellRef.Column!" @key="cellRef" @ref="cellRef.Ref"></Cell>
         }
