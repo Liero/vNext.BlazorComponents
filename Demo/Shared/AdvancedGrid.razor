@@ -217,7 +217,7 @@
     public async Task ReorderColumm(ColumnDef<TRow> columnDef)
     {
         string userResponse = await Js.InvokeAsync<string>("prompt", "", columnDef.Order);
-        if (float.TryParse(userResponse, out var val))
+        if (int.TryParse(userResponse, out var val))
         {
             columnDef.Order = val;
         }

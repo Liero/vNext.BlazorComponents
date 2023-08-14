@@ -100,7 +100,15 @@ public partial class SimpleGrid<TRow> : ComponentBase, IDisposable
     #endregion
     internal List<Header<TRow>> Headers { get; } = new List<Header<TRow>>();
 
-    public IEnumerable<ColumnDef<TRow>> VisibleColumns => ColumnDefinitions.Where(c => c.IsVisible);
+    private List<ColumnDef<TRow>>? _visibleColumns;
+
+    public IEnumerable<ColumnDef<TRow>> VisibleColumns => _visibleColumns ??= ColumnDefinitions
+        .Select((column, index) => (column, index))
+        .OrderBy(x => x.column.Order.GetValueOrDefault(x.index))
+        .ThenByDescending(x => x.column.Order.HasValue) //explicit value has priority
+        .Select(x => x.column)
+        .Where(column => column.IsVisible)
+        .ToList();
 
     public string GridTemplateColumns =>
         _gridTemplateColumns ?? (_gridTemplateColumns = string.Join(' ', VisibleColumns.Select(c => c.GridTemplateWidth)));
@@ -111,12 +119,13 @@ public partial class SimpleGrid<TRow> : ComponentBase, IDisposable
     /// <remarks>Not all items in <see cref="Items"/> have corresponding <see cref="Row{TRow}"/> due to virtualization</remarks>
     public IEnumerable<Row<TRow>> GetVisibleRows() => _rows.AsEnumerable();
 
+
     /// <summary>
     /// Grid will rerender next time StateHasChanged is called
     /// </summary>
     public void Invalidate(bool invalidateCells)
     {
-        ColumnDefinitions.Sort((a, b) => a.Order.GetValueOrDefault().CompareTo(b.Order.GetValueOrDefault()));
+        _visibleColumns = null;
         _gridTemplateColumns = null;
         ShouldRenderFlag = true;
 

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Threading.Tasks;
@@ -10,25 +9,12 @@ namespace vNext.BlazorComponents.Grid
     public class ColumnDef<TRow> : ComponentBase
     {
         private string? _frozenLeft;
-        private bool _isVisible = true;
 
         [CascadingParameter(Name = "Grid")] internal SimpleGrid<TRow>? Grid { get; set; }
 
         [Parameter] public bool IsDefault { get; set; }
 
-        [Parameter]
-        public bool IsVisible
-        {
-            get => _isVisible;
-            set
-            {
-                if (_isVisible != value)
-                {
-                    _isVisible = value;
-                    Grid?.Invalidate(invalidateCells: false);
-                }
-            }
-        }
+
         [Parameter] public string? Field { get; set; }
 
         [Parameter] public string? Header { get; set; }
@@ -39,7 +25,9 @@ namespace vNext.BlazorComponents.Grid
         [Parameter] public RenderFragment<TRow>? ChildContent { get; set; }
 
         [Parameter] public string? Width { get; set; }
-        [Parameter] public float? Order { get; set; }
+
+        [Parameter] public bool IsVisible { get; set; } = true;
+        [Parameter] public int? Order { get; set; }
 
         [Parameter] public string? CellClass { get; set; }
 
@@ -81,6 +69,19 @@ namespace vNext.BlazorComponents.Grid
         internal void Invalidate()
         {
             _frozenLeft = null;
+        }
+
+        public override async Task SetParametersAsync(ParameterView parameters)
+        {
+            var old = (Order, IsVisible);
+            await base.SetParametersAsync(parameters);
+
+            var updated = (Order, IsVisible);
+
+            if (old != updated)
+            {
+                Grid?.Invalidate(invalidateCells: false);
+            }
         }
 
         protected override void OnInitialized()
