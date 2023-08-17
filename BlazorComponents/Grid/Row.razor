@@ -4,11 +4,15 @@
      @onkeypress="OnKeyPress"
      @oncontextmenu="OnContextMenu" @oncontextmenu:preventDefault="Grid!.OnRowContextMenu.HasDelegate">
     @{
-        if (_cellRefs == null || _cellRefsInvalid)
+        if (_cellRefs == null || _columnsInvalidated)
         {
             _cellRefs = Grid!.VisibleColumns.Select(c => new CellRef(c)).ToList();
-            _cellRefsInvalid = false;
         }
+        else if(_columnsInvalidated)
+        {
+            _cellRefs = Grid!.VisibleColumns.Select(c => _cellRefs.Find(x => x.Column == c) ?? new CellRef(c)).ToList();
+        }
+        _columnsInvalidated = false;
     }
     <CascadingValue IsFixed="true" Value="this">
         @foreach (var cellRef in _cellRefs)

@@ -124,8 +124,7 @@ public partial class SimpleGrid<TRow> : ComponentBase, IDisposable
     /// Grid will rerender next time StateHasChanged is called
     /// </summary>
     public void Invalidate(bool invalidateCells)
-    {
-        _visibleColumns = null;
+    {      
         _gridTemplateColumns = null;
         ShouldRenderFlag = true;
 
@@ -142,6 +141,25 @@ public partial class SimpleGrid<TRow> : ComponentBase, IDisposable
     public void Refresh(bool refreshCells = true)
     {
         Invalidate(refreshCells);
+        StateHasChanged();
+    }
+
+    internal void InvalidateColumns()
+    {
+
+        _gridTemplateColumns = null;
+        ShouldRenderFlag = true;
+
+        _visibleColumns = null;
+        Invalidate(true);
+        foreach (var row in _rows)
+        {
+            row.InvalidateColumns();
+        }
+    }
+    public void RefreshColumns()
+    {
+        InvalidateColumns();
         StateHasChanged();
     }
 

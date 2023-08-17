@@ -80,7 +80,7 @@ namespace vNext.BlazorComponents.Grid
 
             if (old != updated)
             {
-                Grid?.Invalidate(invalidateCells: false);
+                Grid?.InvalidateColumns();
             }
         }
 
@@ -88,7 +88,7 @@ namespace vNext.BlazorComponents.Grid
         {
             Order ??= Grid?.ColumnDefinitions.Count + 1;
             Grid?.AddColumnDefinition(this);
-            Grid?.Refresh();
+            Grid?.InvalidateColumns();
         }
 
         public void Dispose()

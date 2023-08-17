@@ -222,7 +222,7 @@
             columnDef.Order = val;
         }
         this.StateHasChanged();
-        _simpleGrid.Refresh();
+        _simpleGrid.RefreshColumns();
     }
 
     public void ShowCustomFilterUI(ColumnDef<TRow> columnDef)
