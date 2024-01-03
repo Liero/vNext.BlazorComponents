@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -18,6 +19,6 @@ namespace vNext.BlazorComponents.Demo.Shared
         public ColumnDef<TItem>? Column { get; }
         public IFilterDescriptor FilterDescriptor { get; }
 
-        public Expression<Func<TItem, bool>> Predicate { get; set; }
+        public Expression<Func<TItem, bool>>? Predicate { get; set; }
     }
 }

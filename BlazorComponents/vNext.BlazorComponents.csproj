@@ -6,7 +6,7 @@
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Authors>Daniel Turan</Authors>
 		<Company>vNext Software Consulting</Company>
-		<Version>0.8.0</Version>
+		<Version>0.9.0</Version>
 		<PackageTags>Blazor DataGrid</PackageTags>
 		<Description>
 			High performace UI components for Blazor
@@ -16,9 +16,12 @@
 			* Container - just a container that does not produce any html, but allow to control rerendering of ChildContent
 		</Description>
 		<PackageReleaseNotes>
+			#0.9
+			Support for NOT operator prefix
+			
 			#0.8
 			Column Reordering
-			
+
 			#0.7
 			Cell Navigation
 
@@ -51,8 +54,8 @@
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 		<DebugType>embedded</DebugType>
-		<AssemblyVersion>0.8.0</AssemblyVersion>
-		<FileVersion>0.8.0</FileVersion>
+		<AssemblyVersion>0.9.0</AssemblyVersion>
+		<FileVersion>0.9.0</FileVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
@@ -61,7 +64,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.0" />
-		<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.6.4">
+		<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.8.4">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>

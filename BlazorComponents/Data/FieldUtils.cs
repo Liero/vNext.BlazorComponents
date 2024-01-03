@@ -103,17 +103,17 @@ namespace vNext.BlazorComponents.Data
         }
 
         public static LambdaExpression CreatePredicateLambda(this LambdaExpression fieldExpression, string @operator, object? value)
-        {
+        {       
             Expression propertyExp = fieldExpression.Body;
             string operatorBase = @operator;
             bool negate = false;
-            const string negatePrefix = "not ";
-            if (operatorBase.StartsWith(negatePrefix))
+            const string negatePrefix = "not";
+            if (operatorBase.StartsWith(negatePrefix) && operatorBase != "notequals")
             {
-                operatorBase = operatorBase.Substring(negatePrefix.Length);
+                operatorBase = operatorBase.Substring(negatePrefix.Length).Trim();
                 negate = true;
             }
-            Expression predicateBody = @operator switch
+            Expression predicateBody = operatorBase switch
             {
                 "==" or "equals" => Expression.Equal(propertyExp, Expression.Constant(value, fieldExpression.ReturnType)),
                 "!=" or "<>" or "notequals" => Expression.NotEqual(propertyExp, Expression.Constant(value, fieldExpression.ReturnType)),
